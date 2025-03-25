@@ -1,0 +1,125 @@
+# Copyright 2025 NEC Corporation.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+# Common service definitions
+x-service-template: &service_template
+  env_file: .env
+  working_dir: /opt/app-root/src/workspace
+  logging:
+    options:
+      max-size: 50m
+  environment:
+    - HTTP_PROXY=${HTTP_PROXY:-}
+    - http_proxy=${http_proxy:-}
+    - HTTPS_PROXY=${HTTPS_PROXY:-}
+    - https_proxy=${https_proxy:-}
+    - NO_PROXY=${NO_PROXY:-}
+    - no_proxy=${no_proxy:-}
+  # command: >
+  #   sh -c "
+  #   npm install &&
+  #   npm run dev
+  #   "
+
+# Definitions for each service
+services:
+  mf-core:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-core
+    build:
+      context: ../mf-core
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+        USERNAME: ${USERNAME:?No USERNAME.}
+        USER_UID: ${USER_UID:?No USER_UID.}
+        USER_GID: ${USER_GID:?No USER_GID.}
+    volumes:
+      - .:/opt/app-root/src/workspace
+      - core_node_modules:/opt/app-root/src/workspace/node_modules
+    ports:
+      - '${PORT_CORE:?No PORT_CORE.}:3000'
+    <<: *service_template
+
+  mf-resource:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-resource
+    build:
+      context: ../mf-resource
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+        USERNAME: ${USERNAME:?No USERNAME.}
+        USER_UID: ${USER_UID:?No USER_UID.}
+        USER_GID: ${USER_GID:?No USER_GID.}
+    volumes:
+      - ../mf-resource:/opt/app-root/src/workspace
+      - resource_node_modules:/opt/app-root/src/workspace/node_modules
+    ports:
+      - '${PORT_RESOURCE:?No PORT_RESOURCE.}:3000'
+    <<: *service_template
+
+  mf-layout:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-layout
+    build:
+      context: ../mf-layout
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+        USERNAME: ${USERNAME:?No USERNAME.}
+        USER_UID: ${USER_UID:?No USER_UID.}
+        USER_GID: ${USER_GID:?No USER_GID.}
+    volumes:
+      - ../mf-layout:/opt/app-root/src/workspace
+      - layout_node_modules:/opt/app-root/src/workspace/node_modules
+    ports:
+      - '${PORT_LAYOUT:?No PORT_LAYOUT.}:3000'
+    <<: *service_template
+
+  mf-user:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-user
+    build:
+      context: ../mf-user
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+        USERNAME: ${USERNAME:?No USERNAME.}
+        USER_UID: ${USER_UID:?No USER_UID.}
+        USER_GID: ${USER_GID:?No USER_GID.}
+    volumes:
+      - ../mf-user:/opt/app-root/src/workspace
+      - user_node_modules:/opt/app-root/src/workspace/node_modules
+    ports:
+      - '${PORT_USER:?No PORT_USER.}:3000'
+    <<: *service_template
+
+volumes:
+  core_node_modules:
+  resource_node_modules:
+  layout_node_modules:
+  user_node_modules:

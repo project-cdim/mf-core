@@ -1,0 +1,89 @@
+# Copyright 2025 NEC Corporation.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+# docker compose -f compose.prod.yaml up -d --build
+
+# Common service definitions
+x-service-template: &service_template
+  env_file: .env
+  logging:
+    options:
+      max-size: 50m
+
+# Definitions for each service
+services:
+  mf-core:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-core
+    build:
+      context: ../mf-core
+      dockerfile: Dockerfile.prod
+      args:
+        # mf-core can use the .env file copied at build time
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+    ports:
+      - '${PORT_CORE:?No PORT_CORE.}:3000'
+    <<: *service_template
+
+  mf-resource:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-resource
+    build:
+      context: ..
+      dockerfile: mf-resource/Dockerfile.prod
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+    ports:
+      - '${PORT_RESOURCE:?No PORT_RESOURCE.}:3000'
+    <<: *service_template
+
+  mf-layout:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-layout
+    build:
+      context: ..
+      dockerfile: mf-layout/Dockerfile.prod
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+    ports:
+      - '${PORT_LAYOUT:?No PORT_LAYOUT.}:3000'
+    <<: *service_template
+
+  mf-user:
+    image: img-${COMPOSE_PROJECT_NAME}-mf-user
+    build:
+      context: ..
+      dockerfile: mf-user/Dockerfile.prod
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        https_proxy: ${https_proxy:-}
+        NO_PROXY: ${NO_PROXY:-}
+        no_proxy: ${no_proxy:-}
+    ports:
+      - '${PORT_USER:?No PORT_USER.}:3000'
+    <<: *service_template

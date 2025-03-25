@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-vsliveshare.vsliveshare",
+    "firsttris.vscode-jest-runner",
+    "Orta.vscode-jest",
+    "mhutchie.git-graph",
+    "eamodio.gitlens",
+    "formulahendry.auto-rename-tag",
+    "ritwickdey.LiveServer",
+    "github.copilot",
+    "lokalise.i18n-ally",
+    "editorconfig.editorconfig",
+    "vunguyentuan.vscode-postcss",
+    "vunguyentuan.vscode-css-variables"
+  ]
+}

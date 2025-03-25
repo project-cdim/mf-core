@@ -1,0 +1,35 @@
+{
+  "cssVariables.lookupFiles": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.less",
+    "node_modules/@mantine/core/styles.css"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.options": {
+    "overrideConfigFile": "/opt/app-root/src/workspace/eslint.config.mjs"
+  },
+  "eslint.useFlatConfig": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": ["./"],
+  "i18n-ally.displayLanguage": "ja",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.localesPaths": ["shared-modules/public/locales"],
+  "jest.rootPath": "/opt/app-root/src/workspace/__test__",
+  "jest.runMode": {
+    "type": "on-demand"
+  },
+  "prettier.configPath": "./shared-modules/.prettierrc",
+  // To enable diagnostics for all TypeScript files in the workspace
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true
+}
