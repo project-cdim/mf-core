@@ -139,3 +139,20 @@ const generateRandomValues = (days: number): [number, string][] => {
 };
 
 export const dummyRandom: APIPromQLRange = getAPIPromQLbyValues(generateRandomValues(1000));
+
+// Generate demo values
+export const generateDemoValues = (days: number): [number, string][] => {
+  const values: [number, string][] = [];
+  const startDate = new Date();
+  startDate.setHours(0, 0, 0, 0);
+  const end = new Date(startDate);
+  startDate.setDate(startDate.getDate() - (days - 1)); // Set to days ago
+  for (let date = new Date(startDate); date <= end; date.setDate(date.getDate() + 1)) {
+    const passed = Math.floor((date.getTime() - startDate.getTime()) / 86400000);
+    const timestamp = Math.floor(date.getTime() / 1000);
+    const value = 10000 - passed * 5 + Math.floor(Math.random() * 1000);
+    values.push([timestamp, value.toString()]);
+  }
+  return values;
+};
+export const dummyDemo: APIPromQLRange = getAPIPromQLbyValues(generateDemoValues(1000));

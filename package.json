@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@luigi-project/client": "^2.18.3",
-    "@luigi-project/core": "^2.18.3",
+    "@luigi-project/core": "^2.20.0",
     "@luigi-project/plugin-auth-oidc": "^2.18.3",
     "@mantine/charts": "^7.16.0",
     "@mantine/core": "^7.16.0",
@@ -44,10 +44,10 @@
     "swr": "^2.2.6-beta.5"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^15.1.2",
     "@storybook/addon-controls": "^8.4.7",
     "@storybook/addon-docs": "^8.4.7",
     "@storybook/nextjs": "^8.4.7",
-    "@next/eslint-plugin-next": "^15.1.2",
     "@storybook/react": "^8.4.7",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",

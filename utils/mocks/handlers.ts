@@ -31,24 +31,40 @@ import {
   dummy731daysZero,
   dummyAllMissing,
   dummyRandom,
+  dummyDemo,
 } from '@/utils/dummy-data/PromQL/energyComparison';
+import { dummyQueryRange, dummyQueryRangeDonut } from '@/shared-modules/utils/dummy-data/PromQL/query_range';
 
 export const handlers = [
   // GET /query_range?query=
-  http.get(`${process.env.NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER}/query_range`, () => {
-    // return HttpResponse.json(dummyCompareMonth1);
-    // return HttpResponse.json(dummyCompareYear1);
-    // return HttpResponse.json(dummyAllMissing); // []
-    // return HttpResponse.json(dummy56days);
-    // return HttpResponse.json(dummy56daysMissing);
-    // return HttpResponse.json(dummy56daysPrevious);
-    // return HttpResponse.json(dummy56daysLast);
-    // return HttpResponse.json(dummy56daysZero);
-    return HttpResponse.json(dummy731days);
-    // return HttpResponse.json(dummy731daysMissing);
-    // return HttpResponse.json(dummy731daysPrevious);
-    // return HttpResponse.json(dummy731daysLast);
-    // return HttpResponse.json(dummy731daysZero);
-    // return HttpResponse.json(dummyRandom);
+  http.get(`${process.env.NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER}/query_range`, ({ request }) => {
+    const url = new URL(request.url);
+    const step = url.searchParams.get('step');
+    const query = url.searchParams.get('query');
+    // console.log(query, step);
+    if (step === '1d') {
+      // return HttpResponse.json(dummyCompareMonth1);
+      // return HttpResponse.json(dummyCompareYear1);
+      // return HttpResponse.json(dummyAllMissing); // []
+      // return HttpResponse.json(dummy56days);
+      // return HttpResponse.json(dummy56daysMissing);
+      // return HttpResponse.json(dummy56daysPrevious);
+      // return HttpResponse.json(dummy56daysLast);
+      // return HttpResponse.json(dummy56daysZero);
+      // return HttpResponse.json(dummy731days);
+      // return HttpResponse.json(dummy731daysMissing);
+      // return HttpResponse.json(dummy731daysPrevious);
+      // return HttpResponse.json(dummy731daysLast);
+      // return HttpResponse.json(dummy731daysZero);
+      // return HttpResponse.json(dummyRandom);
+      return HttpResponse.json(dummyDemo);
+    }
+    // step === '1h'
+    if (query?.includes('.*_metricEnergyJoules_reading')) {
+      // for energy area chart
+      return HttpResponse.json(dummyQueryRange);
+    }
+    // for energy donut chart
+    return HttpResponse.json(dummyQueryRangeDonut);
   }),
 ];

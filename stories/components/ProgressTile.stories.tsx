@@ -22,6 +22,7 @@ import '@/styles/globals.css';
 import { ProgressTile } from '@/components';
 import { Icon } from '@/shared-modules/components/Icon';
 import { EditModeContext } from '@/pages/home';
+import { Card } from '@mantine/core';
 
 const meta: Meta<typeof ProgressTile> = {
   title: 'mf-core/components/ProgressTile',
@@ -46,5 +47,12 @@ export const Primary: Story = {
     loading: false,
     icon: <Icon status='All' />, //TODO: Icon出ない
     // bg: 'red',
+  },
+  render: function Componet(args) {
+    return (
+      <Card withBorder w={150} h={150}>
+        <ProgressTile {...args} />
+      </Card>
+    );
   },
 };

@@ -198,17 +198,17 @@ i18nProvider.init().then(() => {
                 },
               },
               {
-                pathSegment: 'lay-layout-list',
+                pathSegment: 'lay-layout-design-list',
                 category: 'Layout Management',
                 label: 'Layout Designs',
-                viewUrl: `${process.env.NEXT_PUBLIC_URL_LAYOUT}/${locale}/layout-list`,
+                viewUrl: `${process.env.NEXT_PUBLIC_URL_LAYOUT}/${locale}/layout-design-list`,
                 hideFromNav: isHideMenu(process.env.NEXT_PUBLIC_DISPLAY_MENU_LAY_LAYOUT_DESIGNS),
               },
               {
-                pathSegment: 'lay-layout-detail',
+                pathSegment: 'lay-layout-design-detail',
                 category: 'Layout Management',
                 label: 'Layout Design Details ',
-                viewUrl: `${process.env.NEXT_PUBLIC_URL_LAYOUT}/${locale}/layout-detail`,
+                viewUrl: `${process.env.NEXT_PUBLIC_URL_LAYOUT}/${locale}/layout-design-detail`,
                 hideFromNav: true, // Hidden
               },
               {

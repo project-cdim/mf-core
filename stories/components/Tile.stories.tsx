@@ -18,17 +18,11 @@ import type { Meta, StoryObj } from '@storybook/react';
 
 import { Tile } from '@/components/Tile';
 import { EditModeContext } from '@/pages/home';
+import { Box } from '@mantine/core';
 
 const meta: Meta<typeof Tile> = {
   title: 'mf-core/components/Tile',
   component: Tile,
-  decorators: [
-    (Story) => (
-      <EditModeContext.Provider value={false}>
-        <Story />
-      </EditModeContext.Provider>
-    ),
-  ],
 };
 
 export default meta;
@@ -44,5 +38,36 @@ export const Primary: Story = {
     deleteTile: () => {
       alert('deleteTile');
     },
+  },
+  render: function Componet(args) {
+    return (
+      <EditModeContext.Provider value={false}>
+        <Box w={150} h={150}>
+          <Tile {...args} />
+        </Box>
+      </EditModeContext.Provider>
+    );
+  },
+};
+
+export const EditMode: Story = {
+  args: {
+    tileData: {
+      tileType: 'number',
+      targetData: 'resource',
+      state: 'critical',
+    },
+    deleteTile: () => {
+      alert('deleteTile');
+    },
+  },
+  render: function Componet(args) {
+    return (
+      <EditModeContext.Provider value={true}>
+        <Box w={150} h={150}>
+          <Tile {...args} />
+        </Box>
+      </EditModeContext.Provider>
+    );
   },
 };

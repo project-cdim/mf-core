@@ -115,7 +115,14 @@ function HomeMain() {
       return;
     }
 
-    localStorage.setItem(`CDIM.${userId}.dashboard.layout`, JSON.stringify(layout));
+    // Sort layout by y position first (top to bottom), then by x position (left to right)
+    const sortedLayout = [...layout].sort((a, b) => {
+      if (a.y !== b.y) return a.y - b.y;
+      return a.x - b.x;
+    });
+    setLayout(sortedLayout);
+
+    localStorage.setItem(`CDIM.${userId}.dashboard.layout`, JSON.stringify(sortedLayout));
     localStorage.setItem(`CDIM.${userId}.dashboard.tileData`, JSON.stringify(tileData));
     setViewMode(true);
     setShowSuccessMessage(true);
@@ -199,9 +206,9 @@ function HomeMain() {
           />
         )}
         <DashboardGrid layout={layout} setLayout={setLayout} viewMode={viewMode}>
-          {Object.keys(tileData).map((key) => (
-            <Box key={key}>
-              <Tile tileData={tileData[key]} deleteTile={generateDeleteTile(key)} />
+          {layout.map((layoutItem) => (
+            <Box key={layoutItem.i}>
+              <Tile tileData={tileData[layoutItem.i]} deleteTile={generateDeleteTile(layoutItem.i)} />
             </Box>
           ))}
         </DashboardGrid>
