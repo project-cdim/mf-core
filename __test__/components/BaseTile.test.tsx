@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -136,5 +136,58 @@ describe('BaseTile', () => {
     expect(deleteIcon).toBeVisible();
     await userEvent.click(deleteIcon);
     expect(mockDeleteTile).toHaveBeenCalled();
+  });
+
+  test('When tileTitle is undefined, render Not Found', () => {
+    const props: BaseTileProps = {
+      tileTitle: undefined,
+      deleteTile: jest.fn(),
+      hasPermission: true,
+      children: <div data-testid='children'>children</div>,
+    };
+
+    const { container } = render(
+      <EditModeContext.Provider value={true}>
+        <BaseTile {...props} />
+      </EditModeContext.Provider>
+    );
+
+    const notFoundTitle = screen.getByRole('heading', { name: 'Not Found' });
+    expect(notFoundTitle).toBeVisible();
+    expect(notFoundTitle).toHaveTextContent('Not Found');
+
+    // children should not be rendered
+    const children = screen.queryByTestId('children');
+    expect(children).toBeNull();
+
+    // delete icon should still be rendered in edit mode
+    const deleteIcon = screen.getByRole('button', { name: 'Delete' });
+    expect(deleteIcon).toBeVisible();
+
+    expect(container).not.toDisplayLoader();
+  });
+
+  test('When tileTitle is undefined and reference mode, render Not Found without delete icon', () => {
+    const props: BaseTileProps = {
+      tileTitle: undefined,
+      deleteTile: jest.fn(),
+      hasPermission: true,
+      children: <div data-testid='children'>children</div>,
+    };
+
+    const { container } = render(
+      <EditModeContext.Provider value={false}>
+        <BaseTile {...props} />
+      </EditModeContext.Provider>
+    );
+
+    const notFoundTitle = screen.getByRole('heading', { name: 'Not Found' });
+    expect(notFoundTitle).toBeVisible();
+
+    // delete icon should not be rendered in reference mode
+    const deleteIcon = screen.queryByRole('button', { name: 'Delete' });
+    expect(deleteIcon).toBeNull();
+
+    expect(container).not.toDisplayLoader();
   });
 });

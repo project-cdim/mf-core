@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -18,8 +18,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import useSWRImmutable from 'swr/immutable';
 
 import { APIDeviceType, APIPromQLMetrics, APIPromQLRange } from '@/shared-modules/types';
-import { fetcher, parseStringIntoNumber } from '@/shared-modules/utils';
-// import { useMSW } from '@/shared-modules/utils/hooks';
+import { parseStringIntoNumber, fetcherForPromqlByPost, createPromQLParams } from '@/shared-modules/utils';
+import { useMemo } from 'react';
 
 const previousColor = 'blue.2';
 const lastColor = 'blue.6';
@@ -233,59 +233,70 @@ export const useCompareBarChartData = (
   deviceType: 'all' | APIDeviceType,
   period: 'day' | 'week' | 'month' | 'year'
 ) => {
-  // const mswInitializing = useMSW();
-  const mswInitializing = false; // Do not use MSW
   const t = useTranslations();
   const locale = useLocale();
 
-  let step = '';
-  const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  let series: { name: string; color: string }[] = [];
+  const { start, end, step, series } = useMemo(() => {
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(startDate);
 
-  switch (period) {
-    // case 'day':
-    //   end.setHours(now.getHours()); // XX:00:00.000
-    //   start.setHours(end.getHours() - 24);
-    //   step = '1h';
-    //   break;
-    // case 'week':
-    //   start.setDate(end.getDate() - 7);
-    //   step = '1d';
-    //   break;
-    case 'month':
-      start.setDate(end.getDate() - 56);
-      step = '1d';
-      series = [
-        { name: t('Previous 4 weeks'), color: previousColor },
-        { name: t('Last 4 weeks'), color: lastColor },
-      ];
-      break;
-    case 'year':
-      end.setDate(1); // Set the first day of the month
-      start.setDate(1); // Set the first day of the month
-      start.setMonth(start.getMonth() - 24); // set 24 months ago
-      step = '1d';
-      series = [
-        { name: t('Previous 12 months'), color: previousColor },
-        { name: t('Last 12 months'), color: lastColor },
-      ];
-      break;
-  }
+    let stepValue = '';
+    let seriesValue: { name: string; color: string }[] = [];
+
+    switch (period) {
+      case 'month':
+        startDate.setDate(endDate.getDate() - 56);
+        stepValue = '1d';
+        seriesValue = [
+          { name: t('Previous 4 weeks'), color: previousColor },
+          { name: t('Last 4 weeks'), color: lastColor },
+        ];
+        break;
+      case 'year':
+        endDate.setDate(1); // Set the first day of the month
+        startDate.setDate(1); // Set the first day of the month
+        startDate.setMonth(startDate.getMonth() - 24); // set 24 months ago
+        stepValue = '1d';
+        seriesValue = [
+          { name: t('Previous 12 months'), color: previousColor },
+          { name: t('Last 12 months'), color: lastColor },
+        ];
+        break;
+      default:
+        throw new Error(`Period '${period}' is not implemented yet`);
+    }
+    return {
+      start: startDate,
+      end: endDate,
+      step: stepValue,
+      series: seriesValue,
+    };
+  }, [period, t]);
+
   // Convert to ISO 8601 format string, (Request in the UI time zone.)
   const startStr = start.toISOString();
   const endStr = end.toISOString();
-  const periodQuery = `&start=${startStr}&end=${endStr}&step=${step}`;
   // NOTE: Conversion factor is 86400 if step is 1d, otherwise 3600 if step is 1h.
   // const convFactor = step === '1d' ? '86400' : '3600';
   const convFactor = '86400';
-  const QUERY = `label_replace(sum(increase({__name__=~".*_metricEnergyJoules_reading",job=~".*"}[${step}])/${convFactor}),"data_label","${deviceType}_energy","","")${periodQuery}`;
+  const queryStr = `label_replace(sum(increase({__name__=~".*_metricEnergyJoules_reading",job=~".*"}[${step}])/${convFactor}),"data_label","${deviceType}_energy","","")`;
 
-  const { data, error, isValidating } = useSWRImmutable<APIPromQLRange & { url?: string }>(
-    !mswInitializing && `${process.env.NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER}/query_range?query=${QUERY}`,
-    fetcher
+  const swrKey = [
+    `${process.env.NEXT_PUBLIC_URL_BE_PERFORMANCE_MANAGER}/query_range`,
+    queryStr,
+    startStr,
+    endStr,
+    step,
+  ];
+
+  const { data, error, isValidating } = useSWRImmutable<APIPromQLRange>(
+    swrKey,
+    ([url, query, start, end, step]: [string, string, string, string, string]) => {
+      const params = createPromQLParams(query, start, end, step);
+      return fetcherForPromqlByPost(url, params);
+    }
   );
 
   const energy = data?.data?.result?.[0]?.values;

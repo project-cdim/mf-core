@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -19,10 +19,19 @@ import useSWRImmutable from 'swr/immutable';
 
 import { dummyAllMissing, generateValues, getAPIPromQLbyValues } from '@/utils/dummy-data/PromQL/energyComparison';
 import { calcDiffAndRatio, useCompareBarChartData } from '@/utils/hooks';
+import { fetcherForPromqlByPost, createPromQLParams } from '@/shared-modules/utils';
 
 jest.mock('swr/immutable', () => ({
   __esModule: true,
   default: jest.fn(),
+}));
+jest.mock('@/shared-modules/utils', () => ({
+  parseStringIntoNumber: jest.fn((value: string) => {
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? null : parsed; // Return null if it's NaN
+  }),
+  fetcherForPromqlByPost: jest.fn(),
+  createPromQLParams: jest.fn(),
 }));
 
 describe('useCompareBarChartData', () => {
@@ -567,5 +576,117 @@ describe('calcDiffAndRatio', () => {
   test('should return correct diff and ratio when both numbers are zero', () => {
     const result = calcDiffAndRatio(0, 0);
     expect(result).toEqual({ diff: 0, ratio: null });
+  });
+});
+
+describe('fetcherForPromqlByPost execution verification', () => {
+  test('should call fetcherForPromqlByPost with correct parameters when SWR fetcher is executed', async () => {
+    const mockFetcher = jest.fn().mockResolvedValue({
+      data: {
+        result: [
+          {
+            values: [
+              [1640995200, '100.5'],
+              [1641081600, '200.3'],
+            ],
+          },
+        ],
+      },
+    });
+
+    (fetcherForPromqlByPost as jest.Mock).mockImplementation(mockFetcher);
+    (createPromQLParams as jest.Mock).mockReturnValue({
+      query: 'test_query',
+      start: '2024-01-01T00:00:00.000Z',
+      end: '2024-01-02T00:00:00.000Z',
+      step: '1d',
+    });
+
+    let capturedFetcher: Function | null = null;
+
+    (useSWRImmutable as unknown as jest.Mock).mockImplementation((key, fetcher) => {
+      capturedFetcher = fetcher;
+      return {
+        data: {
+          data: {
+            result: [
+              {
+                values: [
+                  [1640995200, '100.5'],
+                  [1641081600, '200.3'],
+                ],
+              },
+            ],
+          },
+        },
+        error: null,
+        isValidating: false,
+      };
+    });
+
+    renderHook(() => useCompareBarChartData('all', 'month'));
+
+    // Execute the captured fetcher function
+    const testUrl = 'http://test-url/query_range';
+    const testQuery = 'test_query';
+    const testStart = '2024-01-01T00:00:00.000Z';
+    const testEnd = '2024-01-02T00:00:00.000Z';
+    const testStep = '1d';
+
+    await capturedFetcher!([testUrl, testQuery, testStart, testEnd, testStep]);
+
+    // Verify createPromQLParams was called with correct arguments
+    expect(createPromQLParams as jest.Mock).toHaveBeenCalledWith(testQuery, testStart, testEnd, testStep);
+
+    // Verify fetcherForPromqlByPost was called with correct arguments
+    expect(fetcherForPromqlByPost as jest.Mock).toHaveBeenCalledWith(testUrl, {
+      query: 'test_query',
+      start: '2024-01-01T00:00:00.000Z',
+      end: '2024-01-02T00:00:00.000Z',
+      step: '1d',
+    });
+  });
+});
+describe('error boundaries and edge cases', () => {
+  test('should handle null/undefined data in energy parsing', () => {
+    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+      data: {
+        data: {
+          result: [{ values: null }],
+        },
+      },
+      error: null,
+      isValidating: false,
+    }));
+
+    const { result } = renderHook(() => useCompareBarChartData('all', 'month'));
+
+    expect(result.current.barChartData).toEqual([]);
+    expect(result.current.diff).toBeNull();
+    expect(result.current.diffPercent).toBeNull();
+  });
+
+  test('should handle empty result array', () => {
+    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+      data: {
+        data: {
+          result: [],
+        },
+      },
+      error: null,
+      isValidating: false,
+    }));
+
+    const { result } = renderHook(() => useCompareBarChartData('all', 'month'));
+
+    expect(result.current.barChartData).toEqual([]);
+    expect(result.current.lastTotal).toBeNull();
+    expect(result.current.previousTotal).toBeNull();
+  });
+
+  test('should throw error for unsupported period', () => {
+    expect(() => {
+      renderHook(() => useCompareBarChartData('all', 'day' as any));
+    }).toThrow("Period 'day' is not implemented yet");
   });
 });

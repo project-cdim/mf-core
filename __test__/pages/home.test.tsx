@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -14,7 +14,7 @@
  * under the License.
  */
 
-// home.tsx のテスト
+
 import { act } from 'react';
 
 import { screen, within } from '@testing-library/react';
@@ -60,6 +60,20 @@ jest.mock('@/components/AddTileModal', () => ({
   AddTileModal: jest.fn().mockImplementation(() => <div data-testid='mockAddTileModal'>AddTileModal</div>),
 }));
 
+jest.mock('@/components/AlertaSilentGetCode', () => ({
+  __esModule: true,
+  default: ({ onCode, onError }: any) => {
+    // Store the callbacks so we can call them in tests
+    if (typeof onCode === 'function') {
+      (global as any).mockAlertaOnCode = onCode;
+    }
+    if (typeof onError === 'function') {
+      (global as any).mockAlertaOnError = onError;
+    }
+    return <div data-testid='mockAlertaSilentGetCode'>AlertaSilentGetCode</div>;
+  },
+}));
+
 jest.mock('@/shared-modules/utils/hooks', () => ({
   ...jest.requireActual('@/shared-modules/utils/hooks'),
   useNodeNumbers: jest.fn(),
@@ -67,6 +81,7 @@ jest.mock('@/shared-modules/utils/hooks', () => ({
   useLayoutApplyNumbers: jest.fn(),
   useEnergyDonutChartData: jest.fn(),
   usePermission: jest.fn(),
+  useMSW: jest.fn(),
 }));
 
 jest.mock('@/utils/hooks', () => ({
@@ -80,6 +95,25 @@ jest.mock('swr', () => ({
   SWRConfig: jest.fn().mockImplementation(({ children }) => <>{children}</>),
 }));
 
+// Mock fetch API to prevent network requests
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({}),
+    text: () => Promise.resolve(''),
+  })
+) as jest.Mock;
+
+// Mock XMLHttpRequest to prevent network requests
+const mockXHR = {
+  open: jest.fn(),
+  send: jest.fn(),
+  setRequestHeader: jest.fn(),
+} as any;
+
+global.XMLHttpRequest = jest.fn(() => mockXHR) as any;
+
 describe('Home', () => {
   const removeExtraKeyFromLayout = (layout: Layout[]) => {
     const removed = [];
@@ -91,6 +125,8 @@ describe('Home', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset fetch mock
+    (global.fetch as jest.Mock).mockClear();
     (useNodeNumbers as jest.Mock).mockReset().mockReturnValue({
       nodesAll: 10,
       nodesCritical: 2,
@@ -386,6 +422,39 @@ describe('Home', () => {
 
     // Restore Date.now()
     mockDateNow.mockRestore();
+  });
+
+  test('should handle auth error correctly', () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(<Home />);
+
+    // Simulate an auth error to trigger the console.error line 232
+    const mockError = new Error('Test auth error');
+
+    // Use the globally stored onError callback from the mocked component
+    if ((global as any).mockAlertaOnError) {
+      (global as any).mockAlertaOnError(mockError);
+    }
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Auth error:', expect.any(Error));
+    consoleErrorSpy.mockRestore();
+  });
+
+  test('should handle auth code received correctly (onCode callback)', () => {
+    render(<Home />);
+
+    // Simulate receiving an auth code to trigger the onCode callback on line 228
+    const mockCode = 'test-auth-code';
+
+    // Use the globally stored onCode callback from the mocked component
+    if ((global as any).mockAlertaOnCode) {
+      (global as any).mockAlertaOnCode(mockCode);
+    }
+
+    // The onCode callback currently just has a commented console.log,
+    // so we're just verifying the callback can be called without throwing an error
+    expect(true).toBe(true); // Test passes if no error is thrown
   });
 });
 

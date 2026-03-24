@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -111,8 +111,9 @@ describe('AddTileModal', () => {
     expect(screen.getByAltText('Disabled Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Allocated Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Unallocated Resources')).toBeInTheDocument();
-    expect(screen.getByAltText('Included Resources')).toBeInTheDocument();
-    expect(screen.getByAltText('Excluded Resources')).toBeInTheDocument();
+    expect(screen.getByAltText('Design Available Resources')).toBeInTheDocument();
+    expect(screen.getByAltText('Design Unavailable Resources')).toBeInTheDocument();
+    expect(screen.getByAltText('Maintenance Resources')).toBeInTheDocument();
     expect(screen.getByAltText('LayoutApplies.number Suspended.status')).toBeInTheDocument();
     expect(screen.getByAltText('LayoutApplies.number Failed')).toBeInTheDocument();
     expect(screen.getByAltText('Energy Consumptions')).toBeInTheDocument();

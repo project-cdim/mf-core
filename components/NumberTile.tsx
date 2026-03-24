@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -36,6 +36,8 @@ export type NumberTileProps = {
   linkTitle?: string;
   /** The URL link associated with the NumberTile. */
   link?: string;
+  /** Target for link, e.g. '_blank' to open in a new tab */
+  linkTarget?: string;
   /** The request query.  */
   query?: {
     [key: string]: string | string[];
@@ -50,9 +52,9 @@ export type NumberTileProps = {
  * @returns The rendered NumberTile component.
  */
 export const NumberTile = (props: NumberTileProps) => {
-  const { title, status, number, linkTitle, link, query, loading } = props;
+  const { title, status, number, linkTitle, link, linkTarget, query, loading } = props;
   const isEditMode = useContext(EditModeContext);
-  const { bg } = useBackgoundColor(status);
+  const { bg } = useBackgroundColor(status);
 
   return (
     <Box h='100%'>
@@ -77,6 +79,7 @@ export const NumberTile = (props: NumberTileProps) => {
             color='rgb(55 65 81 / var(--tw-text-opacity))'
             display='block'
             h='100%'
+            target={linkTarget}
           >
             <Text fz='50px' fw={700} lh={1}>
               {Number.isInteger(number) ? number : '-'}
@@ -88,18 +91,19 @@ export const NumberTile = (props: NumberTileProps) => {
   );
 };
 
-export const useBackgoundColor = (status?: APPStatus | undefined) => {
+export const useBackgroundColor = (status?: APPStatus | undefined) => {
   const { red, yellow, gray } = useColorStyles();
-  const map = new Map([
+  const map: Map<APPStatus | undefined, string | null> = new Map<APPStatus | undefined, string | null>([
     ['Critical', red.backgroundColor],
     ['Failed', red.backgroundColor],
     ['Warning', yellow.backgroundColor],
     ['Suspended', yellow.backgroundColor],
     ['OK', null],
     ['Disabled', gray.backgroundColor],
-    ['Available', null],
-    ['Unavailable', gray.backgroundColor],
-    ['ALL', null],
+    ['DesignAvailable', null],
+    ['DesignUnavailable', gray.backgroundColor],
+    ['Maintenance', gray.backgroundColor],
+    ['All', null],
     [undefined, null],
   ]);
   return {

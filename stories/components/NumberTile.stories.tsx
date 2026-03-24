@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -33,9 +33,10 @@ const meta: Meta = {
         'Suspended',
         'OK',
         'Disabled',
-        'Available',
-        'Unavailable',
+        'DesignAvailable',
+        'DesignUnavailable',
         'Unallocated',
+        'Maintenance',
         'All',
         undefined,
       ],
@@ -69,7 +70,7 @@ export const Default: Story = {
   },
   decorators: [
     (Story) => (
-      <Card withBorder={true} w={150} h={150}>
+      <Card withBorder={true} w={150} h={150} ta='center'>
         <Story />
       </Card>
     ),
@@ -86,7 +87,7 @@ export const MultiLineTitle: Story = {
   },
   decorators: [
     (Story) => (
-      <Card withBorder={true} w={150} h={150}>
+      <Card withBorder={true} w={150} h={150} ta='center'>
         <Story />
       </Card>
     ),
@@ -102,7 +103,7 @@ export const LinkTitle: Story = {
   },
   decorators: [
     (Story) => (
-      <Card withBorder={true} w={150} h={150}>
+      <Card withBorder={true} w={150} h={150} ta='center'>
         <Story />
       </Card>
     ),
@@ -128,14 +129,82 @@ export const StatusList: Story = {
           'Suspended',
           'OK',
           'Disabled',
-          'Available',
-          'Unavailable',
+          'DesignAvailable',
+          'DesignUnavailable',
           'Unallocated',
+          'Maintenance',
           'All',
           undefined,
         ].map((status) => (
-          <Card withBorder key={status ?? 'undefined'} w={150} h={150}>
-            <NumberTile {...args} title={`Status is ${status}`} status={status as APPStatus | undefined} />
+          <Card withBorder key={status ?? 'undefined'} w={150} h={150} ta='center'>
+            <NumberTile {...args} title={`Status is ${status}`} status={status as APPStatus} />
+          </Card>
+        ))}
+      </>
+    );
+  },
+};
+
+// Display of abstracted tiles
+export const Simple: Story = {
+  args: {
+    title: '',
+    status: 'All',
+    number: 51,
+    loading: false,
+  },
+
+  // Original form
+  // decorators: [
+  //   (Story) => (
+  //     <Group>
+  //       <Story />
+  //     </Group>
+  //   ),
+  // ],
+
+  // By changing the way the contents of decorators are written, the color is forcibly changed
+  decorators: [
+    (Story) => (
+      <>
+        {/* Story-local style: only affect elements inside .simple-tile-wrapper */}
+        <style>
+          {`
+            .simple-tile-wrapper .mantine-Title-root {
+              color: #D0D0D0 !important; /* gray sample */
+              text-align: center;
+            }
+          `}
+        </style>
+        <Group className='simple-tile-wrapper'>
+          <Story />
+        </Group>
+      </>
+    ),
+  ],
+
+  //  If the appearance of the tiles is the same, only one is displayed as a representative
+  // (Example: 'Critical' and 'Failed' have the same appearance, so only 'Critical' is displayed)
+  render: function Componet(args) {
+    return (
+      <>
+        {[
+          'Critical',
+          // 'Failed',
+          'Warning',
+          'Suspended',
+          'OK',
+          'Disabled',
+          // 'DesignAvailable',
+          'DesignUnavailable',
+          // 'Unallocated',
+          // 'Maintenance',
+          // 'All',
+          undefined,
+        ].map((status) => (
+          <Card withBorder key={status ?? 'undefined'} w={150} h={150} ta='center'>
+            {/* <NumberTile {...args} title={`▇▇▇▇▇▇▇`} status={status as APPStatus} /> */}
+            <NumberTile {...args} title={`▇▇\u00A0\u00A0▇▇▇▇▇`} status={status as APPStatus} />
           </Card>
         ))}
       </>

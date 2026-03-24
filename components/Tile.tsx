@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -19,8 +19,10 @@ import { useTranslations } from 'next-intl';
 import { VIEW_LAYOUT, VIEW_RESOURCE } from '@/shared-modules/constant';
 import { APIDeviceType } from '@/shared-modules/types';
 import { usePermission } from '@/shared-modules/utils/hooks';
+import _ from 'lodash';
 
 import {
+  AlertSeverity,
   LayoutApplyTileState,
   NodeTileState,
   ProgressTileState,
@@ -38,6 +40,83 @@ import {
   useResourceNumberTile,
   useResourceProgressTile,
 } from '@/utils/hooks';
+import { useAlertNumberTile } from '@/utils/hooks/useAlertNumberTile';
+
+/**
+ * Renders a number tile based on the target data type.
+ */
+const renderNumberTile = (
+  tileData: TileDataItem & { tileType: 'number' },
+  deleteTile: CallableFunction,
+  t: ReturnType<typeof useTranslations>,
+  hasViewResource: boolean,
+  hasViewLayout: boolean
+) => {
+  switch (tileData.targetData) {
+    case 'node': {
+      const state = tileData.state;
+      const title: Record<NodeTileState, string> = {
+        all: t('Total Nodes'),
+        ok: t('Healthy Nodes'),
+        critical: t('Critical Nodes'),
+        warning: t('Warning Nodes'),
+        disabled: t('Disabled Nodes'),
+      };
+      return (
+        <BaseTile tileTitle={title[state]} deleteTile={deleteTile} hasPermission={hasViewResource}>
+          <NodeNumberTile title={title[state]} state={state} />
+        </BaseTile>
+      );
+    }
+    case 'resource': {
+      const state = tileData.state;
+      const title: Record<ResourceTileState, string> = {
+        all: t('Total Resources'),
+        ok: t('Healthy Resources'),
+        critical: t('Critical Resources'),
+        warning: t('Warning Resources'),
+        disabled: t('Disabled Resources'),
+        unallocated: t('Unallocated Resources'),
+        designAvailable: t('Design Available Resources'),
+        designUnavailable: t('Design Unavailable Resources'),
+        maintenance: t('Maintenance Resources'),
+      };
+      return (
+        <BaseTile tileTitle={title[state]} deleteTile={deleteTile} hasPermission={hasViewResource}>
+          <ResourceNumberTile title={title[state]} state={state} />
+        </BaseTile>
+      );
+    }
+    case 'layout-apply': {
+      const state = tileData.state;
+      const title: Record<LayoutApplyTileState, string> = {
+        suspended: `${t('LayoutApplies.number')}\n(${t('Suspended.status')})`,
+        failed: `${t('LayoutApplies.number')}\n(${t('Failed')})`,
+      };
+      return (
+        <BaseTile tileTitle={title[state]} deleteTile={deleteTile} hasPermission={hasViewLayout}>
+          <LayoutApplyNumberTile title={title[state]} state={state} />
+        </BaseTile>
+      );
+    }
+    case 'alert': {
+      const severity = tileData.severity;
+      const title = `${t('Alerts')}\n(${_.upperFirst(severity)})`;
+      return (
+        <BaseTile tileTitle={title} deleteTile={deleteTile} hasPermission={hasViewResource}>
+          <AlertNumberTile title={title} severity={severity} />
+        </BaseTile>
+      );
+    }
+    default: {
+      return (
+        <BaseTile tileTitle={undefined} deleteTile={deleteTile} hasPermission={false}>
+          <div>{t('Not Found')}</div>
+        </BaseTile>
+      );
+    }
+  }
+};
 
 /**
  * Renders a tile component based on the provided tile data.
@@ -53,55 +132,8 @@ export const Tile = (props: { tileData: TileDataItem; deleteTile: CallableFuncti
   const hasViewLayout = usePermission(VIEW_LAYOUT);
   switch (props.tileData.tileType) {
     case 'number': {
-      switch (props.tileData.targetData) {
-        case 'node': {
-          const state = props.tileData.state;
-          const title: Record<NodeTileState, string> = {
-            all: t('Total Nodes'),
-            ok: t('Healthy Nodes'),
-            critical: t('Critical Nodes'),
-            warning: t('Warning Nodes'),
-            disabled: t('Disabled Nodes'),
-          };
-          return (
-            <BaseTile tileTitle={title[state]} deleteTile={props.deleteTile} hasPermission={hasViewResource}>
-              <NodeNumberTile title={title[state]} state={state} />
-            </BaseTile>
-          );
-        }
-        case 'resource': {
-          const state = props.tileData.state;
-          const title: Record<ResourceTileState, string> = {
-            all: t('Total Resources'),
-            ok: t('Healthy Resources'),
-            critical: t('Critical Resources'),
-            warning: t('Warning Resources'),
-            disabled: t('Disabled Resources'),
-            unallocated: t('Unallocated Resources'),
-            included: t('Included Resources'),
-            excluded: t('Excluded Resources'),
-          };
-          return (
-            <BaseTile tileTitle={title[state]} deleteTile={props.deleteTile} hasPermission={hasViewResource}>
-              <ResourceNumberTile title={title[state]} state={state} />
-            </BaseTile>
-          );
-        }
-        case 'layout-apply': {
-          const state = props.tileData.state;
-          const title: Record<LayoutApplyTileState, string> = {
-            suspended: `${t('LayoutApplies.number')}\n(${t('Suspended.status')})`,
-            failed: `${t('LayoutApplies.number')}\n(${t('Failed')})`,
-          };
-          return (
-            <BaseTile tileTitle={title[state]} deleteTile={props.deleteTile} hasPermission={hasViewLayout}>
-              <LayoutApplyNumberTile title={title[state]} state={state} />
-            </BaseTile>
-          );
-        }
-      }
+      return renderNumberTile(props.tileData, props.deleteTile, t, hasViewResource, hasViewLayout);
     }
-    // eslint-disable-next-line no-fallthrough
     case 'progress': {
       const title = t(`Allocated Resources`);
       return (
@@ -136,7 +168,12 @@ export const Tile = (props: { tileData: TileDataItem; deleteTile: CallableFuncti
       );
     }
     default:
-      return <div>{t('Not Found')}</div>;
+      // return <div>{t('Not Found')}</div>;
+      return (
+        <BaseTile tileTitle={undefined} deleteTile={props.deleteTile} hasPermission={false}>
+          <div>{t('Not Found')}</div>
+        </BaseTile>
+      );
   }
 };
 
@@ -208,4 +245,15 @@ const CompareBarChartTile = (props: {
   const barChartTileProps = useCompareBarChartTile(deviceType, period);
 
   return <BarChartTile {...barChartTileProps} title={props.title} subTitle={props.subTitle} />;
+};
+
+/**
+ * A component that displays a number tile for alert counts.
+ * @param props - The props for the AlertNumberTile component.
+ * @returns The rendered AlertNumberTile component.
+ */
+const AlertNumberTile = (props: { title: string; severity: AlertSeverity }) => {
+  const numberTileProps = useAlertNumberTile(props.severity);
+
+  return <NumberTile {...numberTileProps} title={props.title} />;
 };

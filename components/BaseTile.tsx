@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -28,7 +28,7 @@ import tileClasses from '@/styles/tile.module.css';
 /** Props for the BaseTile component. */
 export type BaseTileProps = {
   /** props */
-  tileTitle: string;
+  tileTitle: string | undefined;
   deleteTile: CallableFunction;
   /** states */
   hasPermission: boolean;
@@ -44,11 +44,22 @@ export type BaseTileProps = {
  * @returns {JSX.Element} The rendered BaseTile component.
  */
 export const BaseTile = (props: BaseTileProps) => {
+  const t = useTranslations();
   const isEditMode = useContext(EditModeContext);
 
   return (
     <Card withBorder ta='center' h='100%' classNames={{ root: `${isEditMode && tileClasses.movable}` }}>
-      {props.hasPermission ? props.children : <TileNoPermissionContent tileTitle={props.tileTitle} />}
+      {props.tileTitle === undefined ? (
+        <Stack justify='center' gap='5px' h='100%'>
+          <Title size='h6'>
+            <div>{t('Not Found')}</div>
+          </Title>
+        </Stack>
+      ) : props.hasPermission ? (
+        props.children
+      ) : (
+        <TileNoPermissionContent tileTitle={props.tileTitle} />
+      )}
       <DeleteActionIcon deleteTile={props.deleteTile} isEditMode={isEditMode} />
     </Card>
   );

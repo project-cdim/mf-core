@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -21,8 +21,9 @@ export type ResourceTileState =
   | 'warning'
   | 'disabled'
   | 'unallocated'
-  | 'included'
-  | 'excluded';
+  | 'designAvailable'
+  | 'designUnavailable'
+  | 'maintenance';
 export type NumberTileDataResource = {
   tileType: 'number';
   targetData: 'resource';
@@ -57,12 +58,33 @@ export type ProgressTileData = {
   state: ProgressTileState;
 };
 
+export type AlertSeverity =
+  | 'security'
+  | 'critical'
+  | 'major'
+  | 'minor'
+  | 'warning'
+  | 'informational'
+  | 'debug'
+  | 'trace'
+  | 'indeterminate'
+  | 'cleared'
+  | 'normal'
+  | 'ok'
+  | 'unknown';
+export type NumberTileDataAlert = {
+  tileType: 'number';
+  targetData: 'alert';
+  severity: AlertSeverity;
+};
+
 export type TileDataItem =
   | NumberTileDataResource
   | NumberTileDataNode
   | NumberTileDataLayoutApply
   | ChartTileData
-  | ProgressTileData;
+  | ProgressTileData
+  | NumberTileDataAlert;
 
 export type TileData = {
   [key: string]: TileDataItem;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -38,8 +38,9 @@ describe('useResourceNumberTile', () => {
       resourcesWarning: 6,
       resourcesDisabled: 7,
       resourcesUnallocated: 8,
-      resourcesAvailable: 9,
-      resourcesUnavailable: 10,
+      resourcesDesignAvailable: 9,
+      resourcesDesignUnavailable: 10,
+      resourcesMaintenance: 11,
       resourcesValidating: false,
       resourcesError: null,
     });
@@ -98,19 +99,33 @@ describe('useResourceNumberTile', () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.query).toEqual({ allocatednode: ['Unallocated'] });
   });
-  test('Available Resources', () => {
-    const { result } = renderHook(() => useResourceNumberTile('included'));
-    expect(result.current.status).toBe('Available');
+  test('Design Available Resources', () => {
+    const { result } = renderHook(() => useResourceNumberTile('designAvailable'));
+    expect(result.current.status).toBe('DesignAvailable');
     expect(result.current.number).toBe(9);
     expect(result.current.linkTitle).toBe('Resources.list');
     expect(result.current.link).toBe('/cdim/res-resource-list');
     expect(result.current.loading).toBe(false);
-    expect(result.current.query).toEqual({ resourceAvailable: ['Available'] });
+    expect(result.current.query).toEqual({
+      resourceAvailable: ['Available'],
+      health: ['OK'],
+      state: ['Enabled'],
+      detection: ['Detected'],
+    });
   });
-  test('Unavailable Resources', () => {
-    const { result } = renderHook(() => useResourceNumberTile('excluded'));
-    expect(result.current.status).toBe('Unavailable');
+  test('Design Unavailable Resources', () => {
+    const { result } = renderHook(() => useResourceNumberTile('designUnavailable'));
+    expect(result.current.status).toBe('DesignUnavailable');
     expect(result.current.number).toBe(10);
+    expect(result.current.linkTitle).toBe('Resources.list');
+    expect(result.current.link).toBeUndefined();
+    expect(result.current.loading).toBe(false);
+    expect(result.current.query).toBeUndefined();
+  });
+  test('Maintenance Resources', () => {
+    const { result } = renderHook(() => useResourceNumberTile('maintenance'));
+    expect(result.current.status).toBe('Maintenance');
+    expect(result.current.number).toBe(11);
     expect(result.current.linkTitle).toBe('Resources.list');
     expect(result.current.link).toBe('/cdim/res-resource-list');
     expect(result.current.loading).toBe(false);

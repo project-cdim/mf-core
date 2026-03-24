@@ -119,6 +119,6 @@ $ npm run test
 
 ## License
 
-Copyright (c) 2025 NEC Corporation.
+Copyright (c) 2026 NEC Corporation.
 
 `mf-core` is under [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)

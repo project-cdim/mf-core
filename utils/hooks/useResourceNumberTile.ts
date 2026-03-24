@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -37,8 +37,9 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
     resourcesWarning,
     resourcesDisabled,
     resourcesUnallocated,
-    resourcesAvailable,
-    resourcesUnavailable,
+    resourcesDesignAvailable,
+    resourcesDesignUnavailable,
+    resourcesMaintenance,
     resourcesValidating,
     resourcesError,
   } = useResourceNumbers();
@@ -83,14 +84,24 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
       returnProps.number = resourcesUnallocated;
       returnProps.query = { allocatednode: ['Unallocated'] };
       break;
-    case 'included':
-      returnProps.status = 'Available';
-      returnProps.number = resourcesAvailable;
-      returnProps.query = { resourceAvailable: ['Available'] };
+    case 'designAvailable':
+      returnProps.status = 'DesignAvailable';
+      returnProps.number = resourcesDesignAvailable;
+      returnProps.query = {
+        resourceAvailable: ['Available'],
+        health: ['OK'],
+        state: ['Enabled'],
+        detection: ['Detected'],
+      };
       break;
-    case 'excluded':
-      returnProps.status = 'Unavailable';
-      returnProps.number = resourcesUnavailable;
+    case 'designUnavailable':
+      returnProps.status = 'DesignUnavailable';
+      returnProps.number = resourcesDesignUnavailable;
+      returnProps.link = undefined;
+      break;
+    case 'maintenance':
+      returnProps.status = 'Maintenance';
+      returnProps.number = resourcesMaintenance;
       returnProps.query = { resourceAvailable: ['Unavailable'] };
       break;
     default:

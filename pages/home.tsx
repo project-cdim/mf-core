@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -34,6 +34,7 @@ import { TileData, TileDataItem, TileSize } from '@/types/TileData';
 import { AddTileModal, DashboardGrid, ErrorsContext, ErrorsContextProvider, Tile } from '@/components';
 
 import { useGetLayout, useUserId } from '@/utils/hooks';
+import AlertaSilentGetCode from '@/components/AlertaSilentGetCode';
 
 /**
  * Retrieves the static props for the Home page.
@@ -162,7 +163,7 @@ function HomeMain() {
     <EditModeContext.Provider value={!viewMode}>
       <Stack>
         <Group align='center' gap='md'>
-          <Title size='1.5rem'>{t('Dashboard')}</Title>
+          <Title order={1}>{t('Dashboard')}</Title>
           <Group align='center' gap='md' bg={viewMode ? undefined : '#f0f0f0'} p='xs'>
             {viewMode ? (
               <Button
@@ -221,6 +222,14 @@ function HomeMain() {
           addTile(addData);
           handlers.close();
           return;
+        }}
+      />
+      <AlertaSilentGetCode
+        onCode={() => {
+          // console.log('Auth code received:', code);
+        }}
+        onError={(error) => {
+          console.error('Auth error:', error);
         }}
       />
     </EditModeContext.Provider>

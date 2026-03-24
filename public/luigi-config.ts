@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -191,6 +191,13 @@ i18nProvider.init().then(() => {
                 hideFromNav: true, // Hidden
               },
               {
+                pathSegment: 'res-composite-resource-detail',
+                category: 'Resource Management',
+                label: 'Composite Resource Details',
+                viewUrl: `${process.env.NEXT_PUBLIC_URL_RESOURCE}/${locale}/composite-resource-detail`,
+                hideFromNav: true, // Hidden
+              },
+              {
                 category: {
                   label: 'Layout Management',
                   icon: 'overview-chart',
@@ -279,6 +286,14 @@ i18nProvider.init().then(() => {
         navExpanded: 'Collapse menu',
         navCollapsed: 'Expand menu',
       },
+      customSandboxRules: [
+        'allow-forms',
+        'allow-modals',
+        'allow-popups',
+        'allow-popups-to-escape-sandbox',
+        'allow-same-origin',
+        'allow-downloads',
+      ],
     },
     lifecycleHooks: {
       luigiAfterInit: () => {

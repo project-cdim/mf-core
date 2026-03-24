@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -53,6 +53,7 @@ describe('AreaChartTileWithAuth', () => {
       linkTitle: 'linkTitle',
       link: 'link',
       query: {},
+      showMenu: false,
     };
     (useGraphViewPropsOfAll as jest.Mock).mockReturnValue({
       areaChartProps: dummyData,
@@ -82,6 +83,7 @@ describe('AreaChartTileWithAuth', () => {
       linkTitle: 'linkTitle',
       link: 'link',
       query: {},
+      showMenu: false,
     };
     (useGraphViewPropsOfAll as jest.Mock).mockReturnValue({
       areaChartProps: dummyData,
@@ -118,5 +120,57 @@ describe('AreaChartTileWithAuth', () => {
     });
     const { container } = render(<AreaChartTile deviceType='all' period='month' />);
     expect(container).toDisplayLoader();
+  });
+
+  test('does not display menu when showMenu is false', () => {
+    const dummyData = {
+      title: 'title',
+      data: [{ date: '2023-01-01', value: 100 }],
+      unit: 'unit',
+      loading: false,
+      linkTitle: 'linkTitle',
+      link: 'link',
+      query: {},
+    };
+    (useGraphViewPropsOfAll as jest.Mock).mockReturnValue({
+      areaChartProps: dummyData,
+      areaChartValidating: false,
+    });
+
+    render(
+      <EditModeContext.Provider value={false}>
+        <AreaChartTile deviceType='all' period='month' />
+      </EditModeContext.Provider>
+    );
+
+    // Verify GraphViewInner is called with showMenu=false
+    const chartProps = (GraphViewInner as jest.Mock).mock.calls[0][0];
+    expect(chartProps.showMenu).toBe(false);
+  });
+
+  test('does not display menu in edit mode even when data exists', () => {
+    const dummyData = {
+      title: 'title',
+      data: [{ date: '2023-01-01', value: 100 }],
+      unit: 'unit',
+      loading: false,
+      linkTitle: 'linkTitle',
+      link: 'link',
+      query: {},
+    };
+    (useGraphViewPropsOfAll as jest.Mock).mockReturnValue({
+      areaChartProps: dummyData,
+      areaChartValidating: false,
+    });
+
+    render(
+      <EditModeContext.Provider value={true}>
+        <AreaChartTile deviceType='all' period='month' />
+      </EditModeContext.Provider>
+    );
+
+    // Verify GraphViewInner is called with showMenu=false
+    const chartProps = (GraphViewInner as jest.Mock).mock.calls[0][0];
+    expect(chartProps.showMenu).toBe(false);
   });
 });

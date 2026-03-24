@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -45,13 +45,48 @@ export const Primary: Story = {
     value: 10,
     allValue: 100,
     loading: false,
-    icon: <Icon status='All' />, //TODO: Icon出ない
+    icon: <Icon status='All' />,
     // bg: 'red',
   },
   render: function Componet(args) {
     return (
       <Card withBorder w={150} h={150}>
         <ProgressTile {...args} />
+      </Card>
+    );
+  },
+};
+
+export const Simple: Story = {
+  args: {
+    title: 'ProgressTile',
+    value: 61,
+    allValue: 100,
+    loading: false,
+    icon: <Icon status='All' />,
+    // bg: 'red',
+  },
+
+  decorators: [
+    (Story) => (
+      <>
+        <style>
+          {`
+            .simple-tile-wrapper .mantine-Title-root {
+              color: #D0D0D0 !important; /* gray sample */
+            }
+          `}
+        </style>
+        <div className='simple-tile-wrapper'>
+          <Story />
+        </div>
+      </>
+    ),
+  ],
+  render: function Componet(args) {
+    return (
+      <Card withBorder w={150} h={150} ta='center'>
+        <ProgressTile {...args} title={`▇▇\u00A0\u00A0▇▇▇▇▇`} />
       </Card>
     );
   },

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -21,7 +21,7 @@ import { render } from '@/shared-modules/__test__/test-utils';
 import { PageLink } from '@/shared-modules/components';
 import { APPStatus } from '@/shared-modules/types';
 
-import { NumberTile, NumberTileProps, useBackgoundColor } from '@/components';
+import { NumberTile, NumberTileProps, useBackgroundColor } from '@/components';
 
 import { EditModeContext } from '@/pages/home';
 
@@ -202,7 +202,7 @@ describe('NumberTile', () => {
   });
 });
 
-describe('useBackgoundColor', () => {
+describe('useBackgroundColor', () => {
   test.each([
     ['Critical', '#ffc9c9'],
     ['Failed', '#ffc9c9'],
@@ -210,15 +210,16 @@ describe('useBackgoundColor', () => {
     ['Suspended', '#ffec99'],
     ['OK', undefined],
     ['Disabled', '#dee2e6'],
-    ['Available', undefined],
-    ['Unavailable', '#dee2e6'],
-    ['ALL', undefined],
+    ['DesignAvailable', undefined],
+    ['DesignUnavailable', '#dee2e6'],
+    ['Maintenance', '#dee2e6'],
+    ['All', undefined],
     [undefined, undefined],
   ])('return background color that matched status', (status, expected) => {
     const wrapper = ({ children }: { children: React.ReactNode }) => {
       return <MantineProvider>{children}</MantineProvider>;
     };
-    const { result } = renderHook(() => useBackgoundColor(status as APPStatus), { wrapper });
+    const { result } = renderHook(() => useBackgroundColor(status as APPStatus), { wrapper });
     expect(result.current.bg).toBe(expected);
   });
 });

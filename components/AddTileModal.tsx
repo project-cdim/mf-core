@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -18,49 +18,23 @@ import NextImage, { StaticImageData } from 'next/image';
 
 import { Button, Group, Image, Modal, Radio, ScrollArea, Stack, Text, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { TileDataItem, TileSize } from '@/types/TileData';
 
 import tileClasses from '@/styles/tile.module.css';
 
-import AreaChartEnergyComsumptionAllEnImg from '../public/images/en/areaChart-energyComsumption-all.png';
-import DonutChartEnergyComsumptionAllEnImg from '../public/images/en/donutChart-energyComsumption-all.png';
-import NumberLayoutApplyFailedEnImg from '../public/images/en/number-layoutApply-failed.png';
-import NumberLayoutApplySuspendedEnImg from '../public/images/en/number-layoutApply-suspended.png';
-import NumberNodeAllEnImg from '../public/images/en/number-node-all.png';
-import NumberNodeCriticalEnImg from '../public/images/en/number-node-critical.png';
-import NumberNodeDisabledEnImg from '../public/images/en/number-node-disabled.png';
-import NumberNodeOkEnImg from '../public/images/en/number-node-ok.png';
-import NumberNodeWarningEnImg from '../public/images/en/number-node-warning.png';
-import NumberResourceAllEnImg from '../public/images/en/number-resource-all.png';
-import NumberResourceAllocatedEnImg from '../public/images/en/number-resource-allocated.png';
-import NumberResourceCriticalEnImg from '../public/images/en/number-resource-critical.png';
-import NumberResourceDisabledEnImg from '../public/images/en/number-resource-disabled.png';
-import NumberResourceExcludedEnImg from '../public/images/en/number-resource-excluded.png';
-import NumberResourceIncludedEnImg from '../public/images/en/number-resource-included.png';
-import NumberResourceOkEnImg from '../public/images/en/number-resource-ok.png';
-import NumberResourceUnallocatedEnImg from '../public/images/en/number-resource-unallocated.png';
-import NumberResourceWarningEnImg from '../public/images/en/number-resource-warning.png';
-import AreaChartEnergyComsumptionAllImg from '../public/images/ja/areaChart-energyComsumption-all.png';
-import DonutChartEnergyComsumptionAllImg from '../public/images/ja/donutChart-energyComsumption-all.png';
-import BarChartEnergyComsumptionAllImg from '../public/images/tileImg/barChart-energyComsumption-all.png';
-import NumberLayoutApplyFailedImg from '../public/images/ja/number-layoutApply-failed.png';
-import NumberLayoutApplySuspendedImg from '../public/images/ja/number-layoutApply-suspended.png';
-import NumberNodeAllImg from '../public/images/ja/number-node-all.png';
-import NumberNodeCriticalImg from '../public/images/ja/number-node-critical.png';
-import NumberNodeDisabledImg from '../public/images/ja/number-node-disabled.png';
-import NumberNodeOkImg from '../public/images/ja/number-node-ok.png';
-import NumberNodeWarningImg from '../public/images/ja/number-node-warning.png';
-import NumberResourceAllImg from '../public/images/ja/number-resource-all.png';
-import NumberResourceAllocatedImg from '../public/images/ja/number-resource-allocated.png';
-import NumberResourceCriticalImg from '../public/images/ja/number-resource-critical.png';
-import NumberResourceDisabledImg from '../public/images/ja/number-resource-disabled.png';
-import NumberResourceExcludedImg from '../public/images/ja/number-resource-excluded.png';
-import NumberResourceIncludedImg from '../public/images/ja/number-resource-included.png';
-import NumberResourceOkImg from '../public/images/ja/number-resource-ok.png';
-import NumberResourceUnallocatedImg from '../public/images/ja/number-resource-unallocated.png';
-import NumberResourceWarningImg from '../public/images/ja/number-resource-warning.png';
+import AreaChart from '../public/images/tileImg/areaChart.png';
+import DonutChart from '../public/images/tileImg/donutChart.png';
+import BarChart from '../public/images/tileImg/barChart.png';
+import NumberWarning from '../public/images/tileImg/number-warning.png';
+import NumberCritical from '../public/images/tileImg/number-critical.png';
+import NumberPlain from '../public/images/tileImg/number-plain.png';
+import NumberOk from '../public/images/tileImg/number-ok.png';
+import NumberDisabled from '../public/images/tileImg/number-disabled.png';
+import NumberSuspended from '../public/images/tileImg/number-suspended.png';
+import NumberUnavailable from '../public/images/tileImg/number-unavailable.png';
+import NumberAllocated from '../public/images/tileImg/number-allocated.png';
 
 /**
  * Modal to add a tile
@@ -99,8 +73,9 @@ export const AddTileModal = ({
     [t('Disabled Resources')]: { tileType: 'number', targetData: 'resource', state: 'disabled' },
     [t('Allocated Resources')]: { tileType: 'progress', targetData: 'resource', state: 'allocated' },
     [t('Unallocated Resources')]: { tileType: 'number', targetData: 'resource', state: 'unallocated' },
-    [t('Included Resources')]: { tileType: 'number', targetData: 'resource', state: 'included' },
-    [t('Excluded Resources')]: { tileType: 'number', targetData: 'resource', state: 'excluded' },
+    [t('Design Available Resources')]: { tileType: 'number', targetData: 'resource', state: 'designAvailable' },
+    [t('Design Unavailable Resources')]: { tileType: 'number', targetData: 'resource', state: 'designUnavailable' },
+    [t('Maintenance Resources')]: { tileType: 'number', targetData: 'resource', state: 'maintenance' },
     [`${t('LayoutApplies.number')} ${t('Suspended.status')}`]: {
       tileType: 'number',
       targetData: 'layout-apply',
@@ -111,6 +86,7 @@ export const AddTileModal = ({
       targetData: 'layout-apply',
       state: 'failed',
     },
+    [`${t('Alerts')} (Critical)`]: { tileType: 'number', targetData: 'alert', severity: 'critical' },
     [t('Energy Consumptions')]: {
       tileType: 'area-chart',
       targetData: 'energy-consumptions',
@@ -150,10 +126,12 @@ export const AddTileModal = ({
     [t('Disabled Resources')]: { w: 2, h: 2 },
     [t('Allocated Resources')]: { w: 2, h: 2 },
     [t('Unallocated Resources')]: { w: 2, h: 2 },
-    [t('Included Resources')]: { w: 2, h: 2 },
-    [t('Excluded Resources')]: { w: 2, h: 2 },
+    [t('Design Available Resources')]: { w: 2, h: 2 },
+    [t('Design Unavailable Resources')]: { w: 2, h: 2 },
+    [t('Maintenance Resources')]: { w: 2, h: 2 },
     [`${t('LayoutApplies.number')} ${t('Suspended.status')}`]: { w: 2, h: 2 },
     [`${t('LayoutApplies.number')} ${t('Failed')}`]: { w: 2, h: 2 },
+    [`${t('Alerts')} (Critical)`]: { w: 2, h: 2 },
     [t('Energy Consumptions')]: { w: 6, h: 4 },
     [t('Energy Consumptions ratio by type')]: { w: 4, h: 4 },
     [`${t('Energy Consumptions')} ${t('4 weeks comparison')}`]: { w: 16, h: 4 },
@@ -171,11 +149,14 @@ export const AddTileModal = ({
       onClose={close}
       lockScroll={false}
       title={
-        <Group>
-          <Title order={3} fz='lg' fw={700}>
-            {t('Add Tile')}
-          </Title>
-        </Group>
+        <Stack gap={0}>
+          <Text size='xs'>{t('Dashboard')}</Text>
+          <Group>
+            <Title order={3} fz='lg' fw={700}>
+              {t('Add Tile')}
+            </Title>
+          </Group>
+        </Stack>
       }
       size={550}
     >
@@ -207,116 +188,126 @@ export const AddTileModal = ({
   );
 };
 
-// eslint-disable-next-line complexity
 const RadioCards = () => {
   const IMAGE_SIZE = 130;
   const t = useTranslations();
-  const locale = useLocale();
 
   const SELECT_TILES: { img: StaticImageData; title: string; description: string }[] = [
     {
-      img: locale === 'ja' ? NumberNodeAllImg : NumberNodeAllEnImg,
+      img: NumberPlain,
       title: t('Total Nodes'),
       description: t('Total number of nodes currently configured'),
     },
     {
-      img: locale === 'ja' ? NumberNodeOkImg : NumberNodeOkEnImg,
+      img: NumberOk,
       title: t('Healthy Nodes'),
       description: t('Number of nodes with all resources in a healthy (OK) state'),
     },
     {
-      img: locale === 'ja' ? NumberNodeCriticalImg : NumberNodeCriticalEnImg,
+      img: NumberCritical,
       title: t('Critical Nodes'),
       description: t('Number of nodes with resources in a critical state'),
     },
     {
-      img: locale === 'ja' ? NumberNodeWarningImg : NumberNodeWarningEnImg,
+      img: NumberWarning,
       title: t('Warning Nodes'),
       description: t('Number of nodes with resources in a warning state'),
     },
     {
-      img: locale === 'ja' ? NumberNodeDisabledImg : NumberNodeDisabledEnImg,
+      img: NumberDisabled,
       title: t('Disabled Nodes'),
       description: t('Number of nodes with resources in a disabled state'),
     },
     {
-      img: locale === 'ja' ? NumberResourceAllImg : NumberResourceAllEnImg,
+      img: NumberPlain,
       title: t('Total Resources'),
       description: t('Number of managed resources'),
     },
     {
-      img: locale === 'ja' ? NumberResourceOkImg : NumberResourceOkEnImg,
+      img: NumberOk,
       title: t('Healthy Resources'),
       description: t('Number of resources in a healthy (OK) state'),
     },
     {
-      img: locale === 'ja' ? NumberResourceCriticalImg : NumberResourceCriticalEnImg,
+      img: NumberCritical,
       title: t('Critical Resources'),
       description: t('Number of resources in a critical state'),
     },
     {
-      img: locale === 'ja' ? NumberResourceWarningImg : NumberResourceWarningEnImg,
+      img: NumberWarning,
       title: t('Warning Resources'),
       description: t('Number of resources in a warning state'),
     },
     {
-      img: locale === 'ja' ? NumberResourceDisabledImg : NumberResourceDisabledEnImg,
+      img: NumberDisabled,
       title: t('Disabled Resources'),
       description: t('Number of resources in a disabled state'),
     },
     {
-      img: locale === 'ja' ? NumberResourceAllocatedImg : NumberResourceAllocatedEnImg,
+      img: NumberAllocated,
       title: t('Allocated Resources'),
       description: t('Number of resources allocated to nodes as a number and display the ratio in a graph'),
     },
     {
-      img: locale === 'ja' ? NumberResourceUnallocatedImg : NumberResourceUnallocatedEnImg,
+      img: NumberPlain,
       title: t('Unallocated Resources'),
       description: t('Number of resources that are unallocated and unused'),
     },
     {
-      img: locale === 'ja' ? NumberResourceIncludedImg : NumberResourceIncludedEnImg,
-      title: t('Included Resources'),
-      description: t('Number of resources that are available as a design target'),
+      img: NumberOk,
+      title: t('Design Available Resources'),
+      description: t(
+        'Number of resources available for layout design (resources with OK health status, Enabled resource status, detectable resources, and not under maintenance)'
+      ),
     },
     {
-      img: locale === 'ja' ? NumberResourceExcludedImg : NumberResourceExcludedEnImg,
-      title: t('Excluded Resources'),
+      img: NumberUnavailable,
+      title: t('Design Unavailable Resources'),
       description: t('Number of resources that are unavailable as a design target'),
     },
     {
-      img: locale === 'ja' ? NumberLayoutApplySuspendedImg : NumberLayoutApplySuspendedEnImg,
+      img: NumberUnavailable,
+      title: t('Maintenance Resources'),
+      description: t('Number of resources that are under maintenance'),
+    },
+    {
+      img: NumberSuspended,
       title: `${t('LayoutApplies.number')} ${t('Suspended.status')}`,
       description: t(
         'Number of layout applies that have stopped reflecting the design (an abnormality has occurred and the migration procedure has been stopped in the middle)'
       ),
     },
     {
-      img: locale === 'ja' ? NumberLayoutApplyFailedImg : NumberLayoutApplyFailedEnImg,
+      img: NumberCritical,
       title: `${t('LayoutApplies.number')} ${t('Failed')}`,
       description: t('Number of layout applies that failed to reflect the design'),
     },
     {
-      img: locale === 'ja' ? AreaChartEnergyComsumptionAllImg : AreaChartEnergyComsumptionAllEnImg,
+      img: NumberCritical,
+      title: `${t('Alerts')} (Critical)`,
+      description: t('Number of alerts (Critical)'),
+    },
+    {
+      img: AreaChart,
       title: t('Energy Consumptions'),
       description: t('Display the total power consumption of resources in the last month in a time series graph'),
     },
     {
-      img: locale === 'ja' ? DonutChartEnergyComsumptionAllImg : DonutChartEnergyComsumptionAllEnImg,
+      img: DonutChart,
       title: t('Energy Consumptions ratio by type'),
       description: t(
         'Display the ratio of the total power consumption of each device type in the last month by resource type in a pie chart'
       ),
     },
     {
-      img: BarChartEnergyComsumptionAllImg,
+      img: BarChart,
       title: `${t('Energy Consumptions')} ${t('4 weeks comparison')}`,
       description: t(
         'Display the power consumption of resources on a daily basis for the last 4 weeks and the previous 4 weeks in a graph'
       ),
     },
     {
-      img: BarChartEnergyComsumptionAllImg,
+      img: BarChart,
       title: `${t('Energy Consumptions')} ${t('Year comparison')}`,
       description: t(
         'Display the power consumption of resources on a monthly basis for the last 12 months and the previous 12 months in a graph'

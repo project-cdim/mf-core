@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -35,6 +35,7 @@ jest.mock('@/utils/hooks', () => ({
   useResourceNumberTile: jest.fn(),
   useResourceProgressTile: jest.fn(),
   useCompareBarChartTile: jest.fn(),
+  useAlertNumberTile: jest.fn(),
 }));
 
 jest.mock('@/components', () => ({
@@ -49,6 +50,7 @@ jest.mock('@/components', () => ({
       {props.title} {props.subTitle}
     </div>
   ),
+  useSetErrorInContext: jest.fn(),
 }));
 
 describe('Tile Component', () => {
@@ -56,6 +58,13 @@ describe('Tile Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (usePermission as jest.Mock).mockReturnValue(true);
+
+    const mockHooks = require('@/utils/hooks');
+    mockHooks.useAlertNumberTile.mockReturnValue({
+      number: 3,
+      status: 'Warning',
+      loading: false,
+    });
   });
 
   test('renders NodeNumberTile correctly', async () => {
@@ -148,5 +157,110 @@ describe('Tile Component', () => {
     };
     render(<Tile tileData={tileData as TileDataItem} deleteTile={deleteTile} />);
     expect(screen.getByText('Not Found')).toBeInTheDocument();
+  });
+
+  test('renders AlertNumberTile correctly', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'critical',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Critical\)/)).toBeInTheDocument();
+  });
+
+  // Test different alert severities
+  test('renders AlertNumberTile with major severity', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'major',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Major\)/)).toBeInTheDocument();
+  });
+
+  test('renders AlertNumberTile with warning severity', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'warning',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Warning\)/)).toBeInTheDocument();
+  });
+
+  test('renders AlertNumberTile with informational severity', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'informational',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Informational\)/)).toBeInTheDocument();
+  });
+
+  test('renders AlertNumberTile with minor severity', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'minor',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Minor\)/)).toBeInTheDocument();
+  });
+
+  test('renders AlertNumberTile with indeterminate severity', () => {
+    const tileData: TileDataItem = {
+      tileType: 'number',
+      targetData: 'alert',
+      severity: 'indeterminate',
+    };
+    render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+    expect(screen.getByText(/Alerts\s*\(Indeterminate\)/)).toBeInTheDocument();
+  });
+
+  describe('number tile - resource states', () => {
+    test.each([
+      'ok',
+      'critical',
+      'warning',
+      'disabled',
+      'unallocated',
+      'designAvailable',
+      'designUnavailable',
+      'maintenance',
+    ] as const)('renders ResourceNumberTile with state "%s"', (state) => {
+      const tileData: TileDataItem = {
+        tileType: 'number',
+        targetData: 'resource',
+        state: state,
+      };
+      render(<Tile tileData={tileData} deleteTile={deleteTile} />);
+
+      const expectedTitles = {
+        ok: 'Healthy Resources',
+        critical: 'Critical Resources',
+        warning: 'Warning Resources',
+        disabled: 'Disabled Resources',
+        unallocated: 'Unallocated Resources',
+        designAvailable: 'Design Available Resources',
+        designUnavailable: 'Design Unavailable Resources',
+        maintenance: 'Maintenance Resources',
+      };
+      expect(screen.getByText(expectedTitles[state])).toBeInTheDocument();
+    });
+  });
+
+  describe('number tile - unknown targetData', () => {
+    test('renders Not Found for unknown targetData', () => {
+      const tileData = {
+        tileType: 'number',
+        targetData: 'unknown',
+        state: 'all',
+      };
+      render(<Tile tileData={tileData as TileDataItem} deleteTile={deleteTile} />);
+      expect(screen.getByText('Not Found')).toBeInTheDocument();
+    });
   });
 });
