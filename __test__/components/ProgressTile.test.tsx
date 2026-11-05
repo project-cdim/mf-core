@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -22,7 +22,7 @@ import classes from '@/shared-modules/styles/styles.module.css';
 
 import { CustomProgress, ProgressTile, ProgressTileProps } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 jest.mock('@/shared-modules/utils/hooks', () => ({
   ...jest.requireActual('@/shared-modules/utils/hooks'),
@@ -49,9 +49,9 @@ describe('ProgressTile', () => {
     [{ allValue: 10, value: 0 }, '0/10'],
     [{ allValue: 0, value: 0 }, '0/0'],
     [{ allValue: 0, value: 5 }, '5/0'],
-    [{ allValue: 10, value: undefined }, '- /10'],
-    [{ allValue: undefined, value: 5 }, '5/ -'],
-    [{ allValue: undefined, value: undefined }, '- / -'],
+    [{ allValue: 10, value: undefined }, '-/10'],
+    [{ allValue: undefined, value: 5 }, '5/-'],
+    [{ allValue: undefined, value: undefined }, '-/-'],
   ])('Render ProgressTile, value: %o, %s', (dummyData, numString) => {
     const props: ProgressTileProps = {
       title: 'TestProgressTile',
@@ -101,7 +101,16 @@ describe('ProgressTile', () => {
       loading: true,
     };
     const { container } = render(<ProgressTile {...props} />);
-    expect(container).toDisplayLoader();
+    expect(container.querySelector('.mantine-Indicator-indicator')).toBeInTheDocument();
+  });
+
+  test.each([
+    { allValue: 1234, value: 1234 },
+    { allValue: 123456, value: 123456 },
+  ])('render ProgressTile with a long value: %o', ({ allValue, value }) => {
+    render(<ProgressTile title='TestProgressTile' value={value} allValue={allValue} loading={false} />);
+
+    expect(screen.getByRole('heading', { name: 'TestProgressTile' })).toBeVisible();
   });
 
   test('render ProgressTile with reference mode', () => {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -17,12 +17,12 @@
 import { useContext } from 'react';
 
 import { BarChart, ChartTooltip } from '@mantine/charts';
-import { Divider, Group, LoadingOverlay, Stack, Text, Title } from '@mantine/core';
+import { Box, Divider, Group, Indicator, Stack, Text, Title } from '@mantine/core';
 
 import { NoData, PageLink } from '@/shared-modules/components';
 import { formatPercentValue, valueToSiPrefix, signOfTheNumber, formatBySiPrefix } from '@/shared-modules/utils';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { compareBarChartDataType } from '@/utils/hooks';
 
 export type BarChartTileProps = {
@@ -77,84 +77,85 @@ export const BarChartTile = (props: BarChartTileProps) => {
   const formattedDiff = `${signOfTheNumber(diff)}${formatEnergyValueWithPrefix(diff, largerPrefix)}`;
 
   return (
-    <>
-      <LoadingOverlay visible={loading} />
-      <Stack justify='flex-end' h={'100%'}>
-        <PageLink
-          title={linkTitle}
-          path={isEditMode ? undefined : link}
-          query={query}
-          color='rgb(55 65 81 / var(--tw-text-opacity))'
-        >
-          <Group mih='2.90625rem' justify='space-between' align='end'>
-            <Stack align='flex-start' gap='xs'>
-              <Title order={3} size='h4'>
-                {title}
-              </Title>
-              <Text fz='sm' c='dimmed'>
-                {subTitle}
-              </Text>
-            </Stack>
-            {previousTotal == null && lastTotal == null ? (
-              <></>
-            ) : (
-              <Group mih='2.90625rem' justify='flex-end' align='end'>
-                <Text fz='1.875rem' fw={600}>
-                  {percentage}
+    <Indicator processing disabled={!loading} position='top-end' size={10} offset={4} h='100%' display='block'>
+      <Box h='100%'>
+        <Stack justify='flex-end' h={'100%'}>
+          <PageLink
+            title={linkTitle}
+            path={isEditMode ? undefined : link}
+            query={query}
+            color='rgb(55 65 81 / var(--tw-text-opacity))'
+          >
+            <Group mih='2.90625rem' justify='space-between' align='end'>
+              <Stack align='flex-start' gap='xs'>
+                <Title order={3} size='h4'>
+                  {title}
+                </Title>
+                <Text fz='sm' c='dimmed'>
+                  {subTitle}
                 </Text>
-                <Text fz='1.875rem' fw={400}>
-                  ({formattedDiff})
-                </Text>
-                <Stack h={50} align='flex-end' justify='center' gap='xs'>
-                  <Text>
-                    {series[0].name} : {formatEnergyValueWithPrefix(previousTotal, largerPrefix)}
+              </Stack>
+              {previousTotal == null && lastTotal == null ? (
+                <></>
+              ) : (
+                <Group mih='2.90625rem' justify='flex-end' align='end'>
+                  <Text fz='1.875rem' fw={600}>
+                    {percentage}
                   </Text>
-                  <Text>
-                    {series[1].name} : {formatEnergyValueWithPrefix(lastTotal, largerPrefix)}
+                  <Text fz='1.875rem' fw={400}>
+                    ({formattedDiff})
                   </Text>
-                </Stack>
-              </Group>
-            )}
-          </Group>
-        </PageLink>
-        <Divider mb='auto' />
-        <NoData isNoData={previousTotal == null && lastTotal == null}>
-          <BarChart
-            h={'80%'}
-            data={barChartData}
-            dataKey={'xtics'}
-            series={series}
-            withLegend
-            valueFormatter={valueFormatter}
-            barChartProps={{ barCategoryGap: '20%' }}
-            tooltipProps={{
-              content: ({ payload }) => (
-                // for changing each data label in tooltip.
-                <ChartTooltip
-                  payload={payload?.map((item) => {
-                    const value = item.payload[item.name];
-                    const name = item.dataKey != null ? item.payload.tooltipLabel[item.dataKey] : '';
-                    return {
-                      ...item,
-                      // to avoid increasing labels in tooltip
-                      key: item.name,
-                      // this is the key that will be used to display the label in the tooltip.
-                      name: name,
-                      payload: {
-                        ...item.payload,
-                        // display value in tooltip. key must be same as payload.name, so change to updated name.
-                        [name]: value,
-                      },
-                    };
-                  })}
-                  series={series}
-                  valueFormatter={valueFormatter}
-                />
-              ),
-            }}
-          />
-        </NoData>
-      </Stack>
-    </>
+                  <Stack h={50} align='flex-end' justify='center' gap='xs'>
+                    <Text>
+                      {series[0].name} : {formatEnergyValueWithPrefix(previousTotal, largerPrefix)}
+                    </Text>
+                    <Text>
+                      {series[1].name} : {formatEnergyValueWithPrefix(lastTotal, largerPrefix)}
+                    </Text>
+                  </Stack>
+                </Group>
+              )}
+            </Group>
+          </PageLink>
+          <Divider mb='auto' />
+          <NoData isNoData={previousTotal == null && lastTotal == null}>
+            <BarChart
+              h={'80%'}
+              data={barChartData}
+              dataKey={'xtics'}
+              series={series}
+              withLegend
+              valueFormatter={valueFormatter}
+              barChartProps={{ barCategoryGap: '20%' }}
+              tooltipProps={{
+                content: ({ payload }) => (
+                  // for changing each data label in tooltip.
+                  <ChartTooltip
+                    payload={payload?.map((item) => {
+                      const value = item.payload[item.name];
+                      const name = item.dataKey != null ? item.payload.tooltipLabel[item.dataKey] : '';
+                      return {
+                        ...item,
+                        // to avoid increasing labels in tooltip
+                        key: item.name,
+                        // this is the key that will be used to display the label in the tooltip.
+                        name: name,
+                        payload: {
+                          ...item.payload,
+                          // display value in tooltip. key must be same as payload.name, so change to updated name.
+                          [name]: value,
+                        },
+                      };
+                    })}
+                    series={series}
+                    valueFormatter={valueFormatter}
+                  />
+                ),
+              }}
+            />
+          </NoData>
+        </Stack>
+      </Box>
+    </Indicator>
   );
 };

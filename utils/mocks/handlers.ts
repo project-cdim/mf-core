@@ -123,28 +123,42 @@ const configurationManagerHandlers = [
 // ===== Alerta Web Handlers =====
 // Endpoints for dashboard alert tiles:
 // - GET /alerts/count?status=open (for alert number tiles)
+// let alertCountToggle = false;
+
+let alertaReqCount = 0;
 const alertaWebHandlers = [
   http.get(`${alertaWebUrl}/alerts/count`, ({ request }) => {
     const url = new URL(request.url);
     const status = url.searchParams.get('status');
-
+    alertaReqCount++;
     if (status === 'open') {
-      return HttpResponse.json({
-        autoRefresh: true,
-        severityCounts: {
-          critical: 5,
-          major: 0,
-          minor: 0,
-          warning: 3,
-          indeterminate: 0,
-          informational: 0,
-        },
-        status: 'ok',
-        statusCounts: {
-          open: 8,
-        },
-        total: 8,
-      });
+      if (alertaReqCount % 2 === 0) {
+        return HttpResponse.json(
+          {
+            code: 'ERROR',
+            message: 'Error',
+            details: 'Error',
+          },
+          { status: 500 }
+        );
+      } else {
+        return HttpResponse.json({
+          autoRefresh: true,
+          severityCounts: {
+            critical: 5,
+            major: 0,
+            minor: 0,
+            warning: 3,
+            indeterminate: 0,
+            informational: 0,
+          },
+          status: 'ok',
+          statusCounts: {
+            open: 8,
+          },
+          total: 8,
+        });
+      }
     }
 
     // Return all alerts if status is not specified
@@ -163,6 +177,48 @@ const alertaWebHandlers = [
         open: 5,
       },
       total: 5,
+    });
+  }),
+  http.get(`${alertaWebUrl}/alerts`, ({ request }) => {
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    if (status === 'open') {
+      return HttpResponse.json({
+        alerts: [
+          {
+            id: 'alert-001',
+            event: 'Internal Server Error',
+            text: 'Critical alert message',
+            lastReceiveTime: '2026-02-03T11:56:31.910Z',
+            resource: 'web01',
+            severity: 'critical',
+          },
+          {
+            id: 'alert-002',
+            event: 'Configuration Manager: Database Connection Error',
+            text: 'Failed to connect to the database. Please contact the administrator.',
+            lastReceiveTime: '2026-01-27T21:00:13.070Z',
+            resource: 'web01',
+            severity: 'warning',
+          },
+          {
+            id: 'alert-003',
+            event: 'Disk Usage High',
+            text: 'Disk usage exceeded 90% threshold.',
+            lastReceiveTime: '2026-01-25T10:30:00.000Z',
+            resource: 'storage01',
+            severity: 'warning',
+          },
+        ],
+        total: 3,
+      });
+    }
+    return HttpResponse.json({ alerts: [], total: 0 });
+  }),
+  http.post(`${alertaWebUrl}/auth/openid`, ({ request }) => {
+    // Simulate a successful authentication response with a dummy access token
+    return HttpResponse.json({
+      access_token: 'dummy_access_token',
     });
   }),
 ];

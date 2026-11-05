@@ -15,7 +15,7 @@
  */
 
 import { useLocale, useTranslations } from 'next-intl';
-import useSWRImmutable from 'swr/immutable';
+import useSWR from 'swr';
 
 import { APIDeviceType, APIPromQLMetrics, APIPromQLRange } from '@/shared-modules/types';
 import { parseStringIntoNumber, fetcherForPromqlByPost, createPromQLParams } from '@/shared-modules/utils';
@@ -291,7 +291,7 @@ export const useCompareBarChartData = (
     step,
   ];
 
-  const { data, error, isValidating } = useSWRImmutable<APIPromQLRange>(
+  const { data, error, isValidating } = useSWR<APIPromQLRange>(
     swrKey,
     ([url, query, start, end, step]: [string, string, string, string, string]) => {
       const params = createPromQLParams(query, start, end, step);

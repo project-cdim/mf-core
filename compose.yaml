@@ -1,4 +1,4 @@
-# Copyright 2025 NEC Corporation.
+# Copyright 2025-2026 NEC Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -26,13 +26,15 @@ x-service-template: &service_template
     - https_proxy=${https_proxy:-}
     - NO_PROXY=${NO_PROXY:-}
     - no_proxy=${no_proxy:-}
+  networks:
+    - cdim-net
   # command: >
   #   sh -c "
   #   npm install &&
   #   npm run dev
   #   "
 
-# Definitions for each service
+  # Definitions for each service
 services:
   mf-core:
     image: img-${COMPOSE_PROJECT_NAME}-mf-core
@@ -123,3 +125,7 @@ volumes:
   resource_node_modules:
   layout_node_modules:
   user_node_modules:
+
+networks:
+  cdim-net:
+    external: true

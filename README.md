@@ -80,6 +80,8 @@ The following table summarizes which micro frontends use each variable listed in
 | NEXT_PUBLIC_DISPLAY_MENU_LAY_POLICIES        | ○       |             |           |         |
 | NEXT_PUBLIC_DISPLAY_MENU_USER_USERS          | ○       |             |           |         |
 | NEXT_PUBLIC_DASHBOARD_INTERVAL_SECONDS       | ○       |             |           |         |
+| NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS | ○   |             |           |         |
+| NEXT_PUBLIC_ALERT_REFRESH_INTERVAL_SEC       | ○       |             |           |         |
 
 ### Start and stop development container
 

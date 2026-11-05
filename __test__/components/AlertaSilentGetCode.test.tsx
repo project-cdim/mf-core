@@ -15,18 +15,19 @@
  */
 
 import { render } from '@/shared-modules/__test__/test-utils';
-import { screen } from '@testing-library/react';
+import { screen, act } from '@testing-library/react';
 import AlertaSilentGetCode from '@/components/AlertaSilentGetCode';
-import { setAlertaAuthCode, startAlertaAuth } from '@/utils/hooks/useAlertNumberData';
 
-// Mock the useAlertNumberData hooks
-jest.mock('@/utils/hooks/useAlertNumberData', () => ({
+// Mock the alert utility functions
+jest.mock('@/utils/alert', () => ({
   setAlertaAuthCode: jest.fn(),
   startAlertaAuth: jest.fn(),
+  isAlertaAuthenticated: jest.fn(() => true),
 }));
 
-const mockSetAlertaAuthCode = setAlertaAuthCode as jest.Mock;
-const mockStartAlertaAuth = startAlertaAuth as jest.Mock;
+const mockAlert = require('@/utils/alert');
+const mockSetAlertaAuthCode = mockAlert.setAlertaAuthCode as jest.Mock;
+const mockStartAlertaAuth = mockAlert.startAlertaAuth as jest.Mock;
 
 // Mock sessionStorage
 const mockSessionStorage = {
@@ -53,6 +54,9 @@ describe('AlertaSilentGetCode', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSessionStorage.getItem.mockReturnValue('test-state');
+    // Default to unauthenticated so that tests exercising the OIDC flow
+    // (startAlertaAuth, addEventListener, etc.) work correctly.
+    mockAlert.isAlertaAuthenticated.mockReturnValue(false);
   });
 
   test('should render iframe', () => {
@@ -62,16 +66,34 @@ describe('AlertaSilentGetCode', () => {
     expect(iframe).toBeDefined();
   });
 
+  test('should skip OIDC flow and mark delivered when already authenticated', () => {
+    // Simulate another frame (e.g. the shell badge poller) having already
+    // obtained a valid shared token.
+    mockAlert.isAlertaAuthenticated.mockReturnValue(true);
+
+    render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
+
+    // startAlertaAuth must NOT be called — doing so would wipe the shared token.
+    expect(mockStartAlertaAuth).not.toHaveBeenCalled();
+    // No message event listener should have been registered.
+    const messageCall = mockAddEventListener.mock.calls.find((c) => c[0] === 'message');
+    expect(messageCall).toBeUndefined();
+    // The iframe is still rendered (it is always present in the DOM).
+    expect(screen.getByTitle('Alerta Silent Auth')).toBeDefined();
+  });
+
   test('should call startAlertaAuth on mount', () => {
     render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
 
     expect(mockStartAlertaAuth).toHaveBeenCalledTimes(1);
   });
 
-  test('should store state in sessionStorage', () => {
+  test('should generate random state parameter', () => {
+    const cryptoSpy = jest.spyOn(crypto, 'getRandomValues');
     render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
 
-    expect(mockSessionStorage.setItem).toHaveBeenCalledWith('al_state', expect.any(String));
+    expect(cryptoSpy).toHaveBeenCalled();
+    cryptoSpy.mockRestore();
   });
 
   test('should add message event listener', () => {
@@ -96,17 +118,21 @@ describe('AlertaSilentGetCode', () => {
       configurable: true,
     });
 
-    // Extract the redirect URI from the iframe src to get the expected origin
+    // Extract the redirect URI and state from the iframe src
     const iframeSrc = iframe.src;
     const redirectUriMatch = iframeSrc.match(/redirect_uri=([^&]+)/);
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    // Extract the state parameter from the URL
+    const stateMatch = iframeSrc.match(/state=([^&]+)/);
+    const state = stateMatch ? decodeURIComponent(stateMatch[1]) : 'test-state';
+
     const mockEvent = {
       data: {
         __al_silent__: true,
         code: 'auth-code-12345',
-        state: 'test-state',
+        state: state, // Use the actual state from the URL
       },
       origin: expectedOrigin,
       source: mockContentWindow,
@@ -139,11 +165,15 @@ describe('AlertaSilentGetCode', () => {
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    // Extract the state parameter
+    const stateMatch = iframeSrc.match(/state=([^&]+)/);
+    const state = stateMatch ? decodeURIComponent(stateMatch[1]) : 'test-state';
+
     const mockEvent = {
       data: {
         __al_silent__: true,
         error: 'login_required',
-        state: 'test-state',
+        state: state,
       },
       origin: expectedOrigin,
       source: mockContentWindow,
@@ -210,10 +240,13 @@ describe('AlertaSilentGetCode', () => {
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    const stateMatch = iframeSrc.match(/state=([^&]+)/);
+    const state = stateMatch ? decodeURIComponent(stateMatch[1]) : 'test-state';
+
     const mockEvent = {
       data: {
         __al_silent__: true,
-        state: 'test-state',
+        state: state,
       },
       origin: expectedOrigin,
       source: mockContentWindow,
@@ -227,8 +260,6 @@ describe('AlertaSilentGetCode', () => {
   });
 
   test('should handle state mismatch error', () => {
-    mockSessionStorage.getItem.mockReturnValue('different-state');
-
     render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
 
     const calls = mockAddEventListener.mock.calls;
@@ -247,11 +278,12 @@ describe('AlertaSilentGetCode', () => {
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    // Use a different state than what was generated
     const mockEvent = {
       data: {
         __al_silent__: true,
         code: 'auth-code-12345',
-        state: 'test-state',
+        state: 'wrong-state-value',
       },
       origin: expectedOrigin,
       source: mockContentWindow,
@@ -283,11 +315,14 @@ describe('AlertaSilentGetCode', () => {
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    const stateMatch = iframeSrc.match(/state=([^&]+)/);
+    const state = stateMatch ? decodeURIComponent(stateMatch[1]) : 'test-state';
+
     const mockEvent = {
       data: {
         __al_silent__: true,
         error: 'login_required',
-        state: 'test-state',
+        state: state,
       },
       origin: expectedOrigin,
       source: mockContentWindow,
@@ -316,11 +351,14 @@ describe('AlertaSilentGetCode', () => {
     const redirectUri = redirectUriMatch ? decodeURIComponent(redirectUriMatch[1]) : '';
     const expectedOrigin = redirectUri ? new URL(redirectUri).origin : 'http://localhost:3000';
 
+    const stateMatch = iframeSrc.match(/state=([^&]+)/);
+    const state = stateMatch ? decodeURIComponent(stateMatch[1]) : 'test-state';
+
     const mockEvent = {
       data: {
         __al_silent__: true,
         code: 'auth-code-12345',
-        state: 'test-state',
+        state: state,
       },
       origin: expectedOrigin,
       source: {}, // Different source
@@ -389,5 +427,80 @@ describe('AlertaSilentGetCode', () => {
 
     // Verify the module was loaded without errors
     expect(AlertaSilentGetCodeModule.default).toBeDefined();
+  });
+
+  test('should trigger re-authentication when auth is lost', async () => {
+    jest.useFakeTimers();
+    const mockIsAlertaAuthenticated = mockAlert.isAlertaAuthenticated as jest.Mock;
+
+    // Start as already authenticated (shared token from another frame, e.g. the
+    // shell badge poller). The component skips OIDC but sets deliveredOnce=true.
+    mockIsAlertaAuthenticated.mockReturnValue(true);
+
+    render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
+
+    // OIDC flow must have been skipped on mount.
+    expect(mockStartAlertaAuth).not.toHaveBeenCalled();
+
+    // Simulate auth loss (token expired / invalidated).
+    mockIsAlertaAuthenticated.mockReturnValue(false);
+
+    // Fast-forward time to trigger the re-auth watchdog (default 30 s).
+    await act(async () => {
+      jest.advanceTimersByTime(30000);
+      await Promise.resolve();
+    });
+
+    // startAlertaAuth should now be called for re-authentication.
+    expect(mockStartAlertaAuth).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
+  });
+
+  describe('reauth check interval', () => {
+    test.each(['1', '1.5'])(
+      'uses the env value as the interval when NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS is a valid number: %s',
+      (n) => {
+        const envMock = jest.replaceProperty(process, 'env', {
+          ...process.env,
+          NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS: n,
+        });
+        const setIntervalSpy = jest.spyOn(global, 'setInterval');
+        render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
+        expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), parseFloat(n) * 1000);
+        setIntervalSpy.mockRestore();
+        envMock.restore();
+      }
+    );
+
+    test.each(['', undefined, '0'])(
+      'uses the default 30s interval when NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS is zero or falsy: %s',
+      (n) => {
+        const envMock = jest.replaceProperty(process, 'env', {
+          ...process.env,
+          NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS: n,
+        });
+        const setIntervalSpy = jest.spyOn(global, 'setInterval');
+        render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
+        expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 30000);
+        setIntervalSpy.mockRestore();
+        envMock.restore();
+      }
+    );
+
+    test.each([undefined, 'dummy'])(
+      'uses the default 30s interval when NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS is not a number: %s',
+      (n) => {
+        const envMock = jest.replaceProperty(process, 'env', {
+          ...process.env,
+          NEXT_PUBLIC_ALERTA_REAUTH_CHECK_INTERVAL_SECONDS: n,
+        });
+        const setIntervalSpy = jest.spyOn(global, 'setInterval');
+        render(<AlertaSilentGetCode onCode={mockOnCode} onError={mockOnError} />);
+        expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 30000);
+        setIntervalSpy.mockRestore();
+        envMock.restore();
+      }
+    );
   });
 });

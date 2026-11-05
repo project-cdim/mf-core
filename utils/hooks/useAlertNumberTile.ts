@@ -14,41 +14,50 @@
  * under the License.
  */
 
+import { APPStatus } from '@/shared-modules/types';
 import { NumberTileProps, useSetErrorInContext } from '@/components';
 
-import { useAlertNumberData } from '@/utils/hooks/useAlertNumberData';
+import { useAlertBadgeError } from '@/utils/hooks/useAlertBadgeError';
+import { useAlertSeverityCounts } from '@/utils/hooks/useAlertSeverityCounts';
 import { AlertSeverity } from '@/types/TileData';
 
 /**
  * Custom hook for alert number tile.
  *
+ * Renders from the shared alert badge state that the bell badge poller in the
+ * core (shell) window publishes — the tile does not fetch by itself. Number
+ * and error state therefore always flip together with the bell's badge and
+ * error strike, on the poller's publish signal.
+ *
  * @param severity - The severity level of alerts to count
  * @returns The number tile props for alert counts, excluding 'title'
  */
 export const useAlertNumberTile = (severity: AlertSeverity): Omit<NumberTileProps, 'title'> => {
-  // const t = useTranslations();
-
-  const { alertError, alertValidating, getAlertCount } = useAlertNumberData();
+  const alertError = useAlertBadgeError();
+  const severityCounts = useAlertSeverityCounts();
 
   /** Set error in context */
   useSetErrorInContext(`alerta-${severity}`, alertError);
 
-  // Map severity to APPStatus for coloring
-  // const severityStatusMap: Record<AlertSeverity, APPStatus> = {
-  //   critical: 'Critical',
-  //   major: 'Warning',
-  //   minor: 'Warning',
-  //   warning: 'Warning',
-  //   indeterminate: 'OK',
-  //   informational: 'OK',
-  // };
+  const severityStatusMap: Partial<Record<AlertSeverity, APPStatus>> = {
+    critical: 'Critical',
+    warning: 'Warning',
+    //   major: 'Warning',
+    //   minor: 'Warning',
+    //   warning: 'Warning',
+    //   indeterminate: 'OK',
+    //   informational: 'OK',
+  };
 
+  // In error state the poller drops the counts, so the tile shows '-' (a
+  // non-integer number renders as '-') in step with the bell's error strike.
+  // Loading only before the very first publication (startup).
   return {
-    number: getAlertCount(severity),
-    status: 'Critical', //severityStatusMap[severity],
+    number: alertError || !severityCounts ? undefined : (severityCounts[severity] ?? 0),
+    status: severityStatusMap[severity],
     linkTitle: 'Alerta Web UI',
     link: `${process.env.NEXT_PUBLIC_URL_ALERTA_WEBUI || ''}/alerts?q=severity%3A${severity}#status:open`,
     linkTarget: '_blank',
-    loading: alertValidating,
+    loading: !alertError && severityCounts === undefined,
   };
 };

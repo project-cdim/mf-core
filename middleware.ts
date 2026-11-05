@@ -1,0 +1,29 @@
+/*
+ * Copyright 2026 NEC Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+import createMiddleware from 'next-intl/middleware';
+
+import { routing } from './i18n/routing';
+
+export default createMiddleware(routing);
+
+export const config = {
+  // Run the i18n middleware only on localized application paths.
+  // The bare root path "/" is the Luigi core shell and must NOT be
+  // locale-redirected. Luigi assets, auth callbacks, Next.js internals
+  // and any file with an extension are excluded as well.
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|luigi|auth|assets|images|i18n|.*\\..*).+)'],
+};

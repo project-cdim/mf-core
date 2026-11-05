@@ -31,16 +31,15 @@ describe('useResourceNumberTile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useResourceNumbers as jest.Mock).mockReturnValue({
-      // nodesAll, nodesOk, nodesCritical, nodesWarning, nodesDisabled, nodesValidating, nodesError
       resourcesAll: 1024,
       resourcesOk: 979,
       resourcesCritical: 5,
       resourcesWarning: 6,
-      resourcesDisabled: 7,
       resourcesUnallocated: 8,
       resourcesDesignAvailable: 9,
       resourcesDesignUnavailable: 10,
       resourcesMaintenance: 11,
+      resourcesNotDetected: 12,
       resourcesValidating: false,
       resourcesError: null,
     });
@@ -61,7 +60,7 @@ describe('useResourceNumberTile', () => {
     expect(result.current.linkTitle).toBe('Resources.list');
     expect(result.current.link).toBe('/cdim/res-resource-list');
     expect(result.current.loading).toBe(false);
-    expect(result.current.query).toEqual({ health: ['OK'] });
+    expect(result.current.query).toEqual({ status: ['OK'] });
   });
   test('Critical Resources', () => {
     const { result } = renderHook(() => useResourceNumberTile('critical'));
@@ -70,7 +69,7 @@ describe('useResourceNumberTile', () => {
     expect(result.current.linkTitle).toBe('Resources.list');
     expect(result.current.link).toBe('/cdim/res-resource-list');
     expect(result.current.loading).toBe(false);
-    expect(result.current.query).toEqual({ health: ['Critical'] });
+    expect(result.current.query).toEqual({ status: ['Critical'] });
   });
   test('Warning Resources', () => {
     const { result } = renderHook(() => useResourceNumberTile('warning'));
@@ -79,16 +78,7 @@ describe('useResourceNumberTile', () => {
     expect(result.current.linkTitle).toBe('Resources.list');
     expect(result.current.link).toBe('/cdim/res-resource-list');
     expect(result.current.loading).toBe(false);
-    expect(result.current.query).toEqual({ health: ['Warning'] });
-  });
-  test('Disabled Resources', () => {
-    const { result } = renderHook(() => useResourceNumberTile('disabled'));
-    expect(result.current.status).toBe('Disabled');
-    expect(result.current.number).toBe(7);
-    expect(result.current.linkTitle).toBe('Resources.list');
-    expect(result.current.link).toBe('/cdim/res-resource-list');
-    expect(result.current.loading).toBe(false);
-    expect(result.current.query).toEqual({ state: ['Disabled'] });
+    expect(result.current.query).toEqual({ status: ['Warning'] });
   });
   test('Unallocated Resources', () => {
     const { result } = renderHook(() => useResourceNumberTile('unallocated'));
@@ -108,8 +98,7 @@ describe('useResourceNumberTile', () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.query).toEqual({
       resourceAvailable: ['Available'],
-      health: ['OK'],
-      state: ['Enabled'],
+      status: ['OK'],
       detection: ['Detected'],
     });
   });
@@ -139,5 +128,14 @@ describe('useResourceNumberTile', () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.status).toBeUndefined();
     expect(result.current.query).toBeUndefined();
+  });
+  test('Not Detected Resources', () => {
+    const { result } = renderHook(() => useResourceNumberTile('notDetected'));
+    expect(result.current.status).toBe('NotDetected');
+    expect(result.current.number).toBe(12);
+    expect(result.current.linkTitle).toBe('Resources.list');
+    expect(result.current.link).toBe('/cdim/res-resource-list');
+    expect(result.current.loading).toBe(false);
+    expect(result.current.query).toEqual({ detection: ['Not Detected'] });
   });
 });

@@ -1,4 +1,4 @@
-# Copyright 2025 NEC Corporation.
+# Copyright 2025-2026 NEC Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,26 +14,34 @@
 
 ############################################################
 ## Stage.1 Rebuild the source code only when needed
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest AS builder
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:1-1776863671@sha256:670c207e6872898228015fa8ec2e4165cfa13089a9e5fccb4f9c6d6cda2811ba AS builder
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
 USER root
 
+# Note: Base image is pinned by digest for reproducibility.
+# microdnf update is intentionally omitted to maintain consistent package versions.
+# Base image updates should be handled through periodic base image tag reviews.
 WORKDIR /app
 
 # Install dependencies
-COPY package*.json ./
-RUN npm ci
+COPY package*.json /app/
+RUN npm ci && npm cache clean --force
 
 # Build the application
 ENV NODE_ENV production
-COPY . .
-RUN npm run build
+COPY . /app/
+RUN --mount=type=secret,id=dotenv,target=/app/.env \
+    npm run build && \
+    rm -f /app/.next/standalone/.env
+
+# Switch to non-root user
+USER 1001
 
 ############################################################
 ## Stage 2 Production image, copy all the files and run next
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:1-1776863671@sha256:670c207e6872898228015fa8ec2e4165cfa13089a9e5fccb4f9c6d6cda2811ba
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -44,9 +52,9 @@ USER 1001
 WORKDIR /app
 
 # Copy necessary files from the build stage
-COPY --from=builder --chown=1001:1001 /app/.next/standalone ./
-COPY --from=builder --chown=1001:1001 /app/.next/static ./.next/static
-COPY --from=builder --chown=1001:1001 /app/public/ ./public
+COPY --from=builder --chown=1001:1001 /app/.next/standalone /app/
+COPY --from=builder --chown=1001:1001 /app/.next/static /app/.next/static/
+COPY --from=builder --chown=1001:1001 /app/public/ /app/public/
 
 # Start the application
 CMD ["node", "server.js"]

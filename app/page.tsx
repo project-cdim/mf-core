@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -16,12 +16,20 @@
 
 import React from 'react';
 
+import AlertBadgeUpdater from '@/components/AlertBadgeUpdater';
+
 import LuigiCoreApp from './LuigiCoreApp';
 
 /**
- * Renders the custom 404 page.
- * @returns The JSX element representing the custom 404 page.
+ * Renders the Index page (Luigi core shell).
+ *
+ * @returns The rendered LuigiCoreApp component.
  */
-export default function Custom404() {
-  return <LuigiCoreApp />;
+export default function Index() {
+  return (
+    <>
+      <LuigiCoreApp />
+      <AlertBadgeUpdater />
+    </>
+  );
 }

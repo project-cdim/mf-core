@@ -16,13 +16,7 @@
 
 import React from 'react';
 
-import { screen } from '@testing-library/react';
-import { AppProps } from 'next/app';
-
-import { render } from '@/shared-modules/__test__/test-utils';
-
-import MyApp from '@/pages/_app';
-import Index from '@/pages/index';
+import LuigiErrorSuppressor from '@/app/LuigiErrorSuppressor';
 
 // Polyfill for PromiseRejectionEvent in Jest environment
 if (typeof global.PromiseRejectionEvent === 'undefined') {
@@ -43,118 +37,14 @@ jest.mock('@/shared-modules/components', () => ({
   Layout: ({ children }: { children: React.ReactNode }) => <div data-testid='mockLayout'>{children}</div>,
 }));
 
-jest.mock('next/router', () => ({
-  useRouter: jest.fn(() => ({
-    locale: 'en',
-    pathname: '/test',
-    query: {},
-    asPath: '/test',
-  })),
-}));
-
-jest.mock('@/pages/index', () => ({
-  __esModule: true,
-  default: () => <div data-testid='mockIndexPage'>Index Page</div>,
-}));
-
-jest.mock('next-intl', () => ({
-  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid='mockNextIntlClientProvider'>{children}</div>
-  ),
-}));
-
-// Mock component for testing
-const TestComponent = () => <div data-testid='testComponent'>Test Component</div>;
-
-describe('MyApp', () => {
-  const defaultPageProps = {
-    messages: {},
-  };
-
-  const createAppProps = (Component: React.ComponentType, pageProps = defaultPageProps): AppProps => ({
-    Component,
-    pageProps,
-    router: {
-      pathname: '/test',
-      route: '/test',
-      query: {},
-      asPath: '/test',
-      basePath: '',
-      locale: 'en',
-      locales: ['en', 'ja'],
-      defaultLocale: 'en',
-      isReady: true,
-      isPreview: false,
-      isLocaleDomain: false,
-      push: jest.fn(),
-      replace: jest.fn(),
-      reload: jest.fn(),
-      back: jest.fn(),
-      forward: jest.fn(),
-      prefetch: jest.fn(),
-      beforePopState: jest.fn(),
-      events: {
-        on: jest.fn(),
-        off: jest.fn(),
-        emit: jest.fn(),
-      },
-      isFallback: false,
-    } as any,
-  });
-
+describe('LuigiErrorSuppressor', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('Component rendering', () => {
-    test('should render Index component without Layout wrapper', () => {
-      const appProps = createAppProps(Index);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('mockIndexPage')).toBeInTheDocument();
-      expect(screen.queryByTestId('mockLayout')).not.toBeInTheDocument();
-      expect(screen.getByTestId('mockErrorBoundary')).toBeInTheDocument();
-    });
-
-    test('should render regular component with Layout wrapper', () => {
-      const appProps = createAppProps(TestComponent);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('testComponent')).toBeInTheDocument();
-      expect(screen.getByTestId('mockLayout')).toBeInTheDocument();
-      expect(screen.getByTestId('mockErrorBoundary')).toBeInTheDocument();
-    });
-
-    test('should render with NextIntlClientProvider wrapper', () => {
-      const appProps = createAppProps(TestComponent);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('mockNextIntlClientProvider')).toBeInTheDocument();
-    });
-
-    test('should pass pageProps to component', () => {
-      const customPageProps = {
-        messages: { test: 'Test Message' },
-        customProp: 'custom value',
-      };
-      const appProps = createAppProps(TestComponent, customPageProps);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('testComponent')).toBeInTheDocument();
-    });
-
-    test('should handle empty pageProps', () => {
-      const appProps = createAppProps(TestComponent, {} as any);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('testComponent')).toBeInTheDocument();
-    });
-
-    test('should handle undefined messages in pageProps', () => {
-      const appProps = createAppProps(TestComponent, { messages: undefined } as any);
-      render(<MyApp {...appProps} />);
-
-      expect(screen.getByTestId('testComponent')).toBeInTheDocument();
+    test('should render nothing', () => {
+      expect(LuigiErrorSuppressor()).toBeNull();
     });
   });
 
@@ -370,7 +260,7 @@ describe('MyApp', () => {
       origConsoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       // require the module so it captures the spy as originalConsoleError and installs override
 
-      require('@/pages/_app');
+      require('@/app/LuigiErrorSuppressor');
     });
 
     afterEach(() => {
@@ -419,7 +309,7 @@ describe('MyApp', () => {
       jest.resetModules();
       // ensure _app is loaded so isStorageRelatedError is defined and used in listeners
 
-      require('@/pages/_app');
+      require('@/app/LuigiErrorSuppressor');
     });
 
     afterEach(() => {
@@ -454,7 +344,7 @@ describe('MyApp', () => {
 
         // requiring the module should not throw when window is undefined
 
-        expect(() => require('@/pages/_app')).not.toThrow();
+        expect(() => require('@/app/LuigiErrorSuppressor')).not.toThrow();
       } finally {
         // restore window
         (global as any).window = savedWindow;

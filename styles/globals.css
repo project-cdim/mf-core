@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -18,7 +18,8 @@
   --luigi__left-sidenav--width: 16rem;
   --max-width: 1100px;
   --border-radius: 12px;
-  --font-mono: ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
+  --font-mono:
+    ui-monospace, Menlo, Monaco, 'Cascadia Mono', 'Segoe UI Mono',
     'Roboto Mono', 'Oxygen Mono', 'Ubuntu Monospace', 'Source Code Pro',
     'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
 
@@ -103,7 +104,8 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: auto !important;
+  background-color: white !important;
 }
 @media screen and (min-width: 1201px) {
   html,
@@ -125,3 +127,100 @@ a {
 .clickable {
   cursor: pointer;
 }
+
+/*
+ * Turn the Alerts modal into a top-right speech-bubble popover, styled like the profile dropdown.
+ * In mf-core, only the alerts node uses openNodeInModal, so this targets the entire Luigi modal
+ * (.fd-dialog). If another modal is added on the core side in the future,
+ * these selectors will need to be scoped.
+ */
+.fd-dialog {
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
+}
+
+/* Make the backdrop transparent (no visible overlay, same as the profile dropdown) */
+.fd-dialog:before {
+  background-color: transparent !important;
+  opacity: 0 !important;
+}
+
+.fd-dialog__content {
+  margin-top: calc(var(--luigi__shellbar--height, 2.75rem) + 0.5rem) !important;
+  margin-right: 0.75rem !important;
+  min-width: 320px !important;
+  min-height: 0 !important;
+  border: 1px solid var(--sapList_BorderColor, #000000) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  overflow: visible !important;
+}
+
+/* Speech-bubble arrow (border part, outer) */
+.fd-dialog__content:before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  right: 15px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 9px solid var(--sapList_BorderColor, #d9d9d9);
+}
+
+/* Speech-bubble arrow (fill part, inner) */
+.fd-dialog__content:after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 16px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid var(--sapGroup_ContentBackground, #fff);
+}
+
+/* Move the Luigi shellbar notification badge down slightly so it fits at the top-right of the icon. */
+.fd-shellbar__counter--notification {
+  top: 7px !important;
+}
+
+/*
+ * Show a slash overlay on the bell icon when fetching alerts fails.
+ * body.alert-fetch-error is added by useAlertBadgePolling on error.
+ */
+body.alert-fetch-error .sap-icon--bell {
+  position: relative;
+}
+body.alert-fetch-error .sap-icon--bell::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 2.5px;
+  background-color: var(--sapNegativeElementColor, #e03131);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  pointer-events: none;
+  opacity: 1;
+  /* color: var(--sapNegativeElementColor, #e03131); */
+}
+/* body.alert-fetch-error .sap-icon--bell::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  right: -50%;
+  width: 14px;
+  height: 14px;
+  line-height: 0;
+  display: block;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  background-color: #e03131;
+background-color: white;
+border-radius: 50%;
+ background-color: var(--mantine-color-red-8);
+pointer-events: none;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' fill='%23e03131' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -19.995 .324l-.005 -.324l.004 -.28c.148 -5.393 4.566 -9.72 9.996 -9.72zm.01 13l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -8a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z'/%3E%3C/svg%3E");
+background-repeat: no-repeat;
+background-size: contain;
+} */

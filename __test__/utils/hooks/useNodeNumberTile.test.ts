@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -31,12 +31,10 @@ describe('useNodeNumberTile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useNodeNumbers as jest.Mock).mockReturnValue({
-      // nodesAll, nodesOk, nodesCritical, nodesWarning, nodesDisabled, nodesValidating, nodesError
       nodesAll: 46,
       nodesOk: 30,
       nodesCritical: 5,
       nodesWarning: 5,
-      nodesDisabled: 6,
       nodesValidating: false,
       nodesError: null,
     });
@@ -77,15 +75,6 @@ describe('useNodeNumberTile', () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.status).toBe('Warning');
     expect(result.current.query).toEqual({ warning: ['exist'] });
-  });
-  test('Disabled Nodes', () => {
-    const { result } = renderHook(() => useNodeNumberTile('disabled'));
-    expect(result.current.number).toBe(6);
-    expect(result.current.linkTitle).toBe('Nodes');
-    expect(result.current.link).toBe('/cdim/res-node-list');
-    expect(result.current.loading).toBe(false);
-    expect(result.current.status).toBe('Disabled');
-    expect(result.current.query).toEqual({ disabled: ['exist'] });
   });
   test('default', () => {
     const { result } = renderHook(() => useNodeNumberTile('test' as NodeTileState));

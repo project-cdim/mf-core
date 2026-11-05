@@ -23,7 +23,7 @@ import { NextIntlClientProvider } from 'next-intl';
 
 import '@/styles/globals.css';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { GraphViewData, GraphViewInner, GraphViewProps } from '@/shared-modules/components';
 import { formatEnergyValue } from '@/shared-modules/utils';
 

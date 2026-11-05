@@ -1,4 +1,4 @@
-# Copyright 2025 NEC Corporation.
+# Copyright 2025-2026 NEC Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,12 +14,26 @@
 
 # docker compose -f compose.prod.yaml up -d --build
 
+# Common build definitions
+x-build-template: &build_template
+  dockerfile: Dockerfile.prod
+  args:
+    HTTP_PROXY: ${HTTP_PROXY:-}
+    http_proxy: ${http_proxy:-}
+    HTTPS_PROXY: ${HTTPS_PROXY:-}
+    https_proxy: ${https_proxy:-}
+    NO_PROXY: ${NO_PROXY:-}
+    no_proxy: ${no_proxy:-}
+  secrets:
+    - dotenv
+
 # Common service definitions
 x-service-template: &service_template
-  env_file: .env
   logging:
     options:
       max-size: 50m
+  networks:
+    - cdim-net
 
 # Definitions for each service
 services:
@@ -27,63 +41,42 @@ services:
     image: img-${COMPOSE_PROJECT_NAME}-mf-core
     build:
       context: ../mf-core
-      dockerfile: Dockerfile.prod
-      args:
-        # mf-core can use the .env file copied at build time
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        http_proxy: ${http_proxy:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        https_proxy: ${https_proxy:-}
-        NO_PROXY: ${NO_PROXY:-}
-        no_proxy: ${no_proxy:-}
+      <<: *build_template
     ports:
-      - '${PORT_CORE:?No PORT_CORE.}:3000'
+      - "${PORT_CORE:?No PORT_CORE.}:3000"
     <<: *service_template
 
   mf-resource:
     image: img-${COMPOSE_PROJECT_NAME}-mf-resource
     build:
-      context: ..
-      dockerfile: mf-resource/Dockerfile.prod
-      args:
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        http_proxy: ${http_proxy:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        https_proxy: ${https_proxy:-}
-        NO_PROXY: ${NO_PROXY:-}
-        no_proxy: ${no_proxy:-}
+      context: ../mf-resource
+      <<: *build_template
     ports:
-      - '${PORT_RESOURCE:?No PORT_RESOURCE.}:3000'
+      - "${PORT_RESOURCE:?No PORT_RESOURCE.}:3000"
     <<: *service_template
 
   mf-layout:
     image: img-${COMPOSE_PROJECT_NAME}-mf-layout
     build:
-      context: ..
-      dockerfile: mf-layout/Dockerfile.prod
-      args:
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        http_proxy: ${http_proxy:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        https_proxy: ${https_proxy:-}
-        NO_PROXY: ${NO_PROXY:-}
-        no_proxy: ${no_proxy:-}
+      context: ../mf-layout
+      <<: *build_template
     ports:
-      - '${PORT_LAYOUT:?No PORT_LAYOUT.}:3000'
+      - "${PORT_LAYOUT:?No PORT_LAYOUT.}:3000"
     <<: *service_template
 
   mf-user:
     image: img-${COMPOSE_PROJECT_NAME}-mf-user
     build:
-      context: ..
-      dockerfile: mf-user/Dockerfile.prod
-      args:
-        HTTP_PROXY: ${HTTP_PROXY:-}
-        http_proxy: ${http_proxy:-}
-        HTTPS_PROXY: ${HTTPS_PROXY:-}
-        https_proxy: ${https_proxy:-}
-        NO_PROXY: ${NO_PROXY:-}
-        no_proxy: ${no_proxy:-}
+      context: ../mf-user
+      <<: *build_template
     ports:
-      - '${PORT_USER:?No PORT_USER.}:3000'
+      - "${PORT_USER:?No PORT_USER.}:3000"
     <<: *service_template
+
+networks:
+  cdim-net:
+    external: true
+
+secrets:
+  dotenv:
+    file: .env

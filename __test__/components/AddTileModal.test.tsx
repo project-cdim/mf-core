@@ -103,12 +103,10 @@ describe('AddTileModal', () => {
     expect(screen.getByAltText('Healthy Nodes')).toBeInTheDocument();
     expect(screen.getByAltText('Critical Nodes')).toBeInTheDocument();
     expect(screen.getByAltText('Warning Nodes')).toBeInTheDocument();
-    expect(screen.getByAltText('Disabled Nodes')).toBeInTheDocument();
     expect(screen.getByAltText('Total Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Healthy Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Critical Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Warning Resources')).toBeInTheDocument();
-    expect(screen.getByAltText('Disabled Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Allocated Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Unallocated Resources')).toBeInTheDocument();
     expect(screen.getByAltText('Design Available Resources')).toBeInTheDocument();

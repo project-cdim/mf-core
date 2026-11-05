@@ -19,7 +19,7 @@ export type ResourceTileState =
   | 'ok'
   | 'critical'
   | 'warning'
-  | 'disabled'
+  | 'notDetected'
   | 'unallocated'
   | 'designAvailable'
   | 'designUnavailable'
@@ -30,7 +30,7 @@ export type NumberTileDataResource = {
   state: ResourceTileState;
 };
 
-export type NodeTileState = 'all' | 'ok' | 'critical' | 'warning' | 'disabled';
+export type NodeTileState = 'all' | 'ok' | 'critical' | 'warning';
 export type NumberTileDataNode = {
   tileType: 'number';
   targetData: 'node' | 'resource';

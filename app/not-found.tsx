@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -14,18 +14,15 @@
  * under the License.
  */
 
-import { useEffect } from 'react';
+import React from 'react';
+
+import LuigiCoreApp from './LuigiCoreApp';
 
 /**
- * Renders the Luigi App component.
+ * Renders the custom not-found page (Luigi core shell).
  *
- * @returns null
+ * @returns The rendered LuigiCoreApp component.
  */
-export default function LuigiApp() {
-  useEffect(() => {
-    require('@luigi-project/core/luigi.js');
-    require('../public/luigi-config');
-  }, []);
-
-  return null;
+export default function NotFound() {
+  return <LuigiCoreApp />;
 }

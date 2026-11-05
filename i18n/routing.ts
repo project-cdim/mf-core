@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -14,15 +14,11 @@
  * under the License.
  */
 
-import React from 'react';
+import { defineRouting } from 'next-intl/routing';
 
-import LuigiCoreApp from './LuigiCoreApp';
-
-/**
- * Renders the Index component.
- *
- * @returns The rendered LuigiCoreApp component.
- */
-export default function Index() {
-  return <LuigiCoreApp />;
-}
+export const routing = defineRouting({
+  locales: ['en', 'ja'],
+  defaultLocale: 'en',
+  localePrefix: 'always',
+  localeDetection: false,
+});

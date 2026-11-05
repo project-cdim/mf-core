@@ -15,13 +15,13 @@
  */
 
 import { renderHook } from '@testing-library/react';
-import useSWRImmutable from 'swr/immutable';
+import useSWR from 'swr';
 
 import { dummyAllMissing, generateValues, getAPIPromQLbyValues } from '@/utils/dummy-data/PromQL/energyComparison';
 import { calcDiffAndRatio, useCompareBarChartData } from '@/utils/hooks';
 import { fetcherForPromqlByPost, createPromQLParams } from '@/shared-modules/utils';
 
-jest.mock('swr/immutable', () => ({
+jest.mock('swr', () => ({
   __esModule: true,
   default: jest.fn(),
 }));
@@ -44,7 +44,7 @@ describe('useCompareBarChartData', () => {
     const mockDate = new Date('2023-06-15T12:00:00');
     jest.useFakeTimers({ now: mockDate });
     const dummy56days = getAPIPromQLbyValues(generateValues(56));
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummy56days,
       error: null,
       isValidating: false,
@@ -89,7 +89,7 @@ describe('useCompareBarChartData', () => {
     jest.useFakeTimers({ now: mockDate });
     const values56days = generateValues(56);
     const dummyPreviousDays = getAPIPromQLbyValues(values56days.slice(0, 28));
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyPreviousDays,
       error: null,
       isValidating: false,
@@ -134,7 +134,7 @@ describe('useCompareBarChartData', () => {
     jest.useFakeTimers({ now: mockDate });
     const values56days = generateValues(56);
     const dummyLastDays = getAPIPromQLbyValues(values56days.slice(28));
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyLastDays,
       error: null,
       isValidating: false,
@@ -175,7 +175,7 @@ describe('useCompareBarChartData', () => {
   });
 
   test('if not fetched monthly data(data is undefined), return empty array.', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: undefined,
       error: null,
       isValidating: false,
@@ -210,7 +210,7 @@ describe('useCompareBarChartData', () => {
   });
 
   test('if not fetched monthly data(result is empty), return empty array.', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyAllMissing,
       error: null,
       isValidating: false,
@@ -250,7 +250,7 @@ describe('useCompareBarChartData', () => {
     [undefined, true],
     [undefined, true],
   ])('if error or loading monthly state not falsy, return value: %o, %o', (error, loading) => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: undefined,
       error: error,
       isValidating: loading,
@@ -272,7 +272,7 @@ describe('useCompareBarChartData', () => {
     jest.useFakeTimers({ now: mockDate });
     const dummy731days = getAPIPromQLbyValues(generateValues(365 * 2 + 1));
 
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummy731days,
       error: null,
       isValidating: false,
@@ -322,7 +322,7 @@ describe('useCompareBarChartData', () => {
     // Get the last array of values731days
     const dummyPreviousDays = getAPIPromQLbyValues(values731days.slice(0, 365));
 
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyPreviousDays,
       error: null,
       isValidating: false,
@@ -371,7 +371,7 @@ describe('useCompareBarChartData', () => {
     // Get the last array of values731days
     const dummyLastDays = getAPIPromQLbyValues(values731days.slice(365));
 
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyLastDays,
       error: null,
       isValidating: false,
@@ -411,7 +411,7 @@ describe('useCompareBarChartData', () => {
   });
 
   test('if not fetched yearly data(data is undefined), return empty array.', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: undefined,
       error: null,
       isValidating: false,
@@ -446,7 +446,7 @@ describe('useCompareBarChartData', () => {
   });
 
   test('if not fetched yearly data(result is empty), return empty array.', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyAllMissing,
       error: null,
       isValidating: false,
@@ -485,7 +485,7 @@ describe('useCompareBarChartData', () => {
     [undefined, true],
     [undefined, true],
   ])('if error or loading yearly state not falsy, return value: %o, %o', (error, loading) => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: undefined,
       error: error,
       isValidating: loading,
@@ -506,7 +506,7 @@ describe('useCompareBarChartData', () => {
     const mockDate = new Date('2023-06-15T12:00:00');
     jest.useFakeTimers({ now: mockDate });
     const dummyData = getAPIPromQLbyValues(generateValues(56).map((value) => [value[0], 'invalid'])); // 'invalid' will cause parseStringIntoNumber to return null
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: dummyData,
       error: null,
       isValidating: false,
@@ -604,7 +604,7 @@ describe('fetcherForPromqlByPost execution verification', () => {
 
     let capturedFetcher: Function | null = null;
 
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation((key, fetcher) => {
+    (useSWR as unknown as jest.Mock).mockImplementation((key, fetcher) => {
       capturedFetcher = fetcher;
       return {
         data: {
@@ -649,7 +649,7 @@ describe('fetcherForPromqlByPost execution verification', () => {
 });
 describe('error boundaries and edge cases', () => {
   test('should handle null/undefined data in energy parsing', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: {
         data: {
           result: [{ values: null }],
@@ -667,7 +667,7 @@ describe('error boundaries and edge cases', () => {
   });
 
   test('should handle empty result array', () => {
-    (useSWRImmutable as unknown as jest.Mock).mockImplementation(() => ({
+    (useSWR as unknown as jest.Mock).mockImplementation(() => ({
       data: {
         data: {
           result: [],

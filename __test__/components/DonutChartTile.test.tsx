@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -24,20 +24,12 @@ import { formatEnergyValue } from '@/shared-modules/utils';
 
 import { DonutChartTile, DonutChartTileProps } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 jest.mock('@mantine/charts', () => ({
   __esModule: true,
   ...jest.requireActual('@mantine/charts'),
   DonutChart: jest.fn().mockReturnValue(<div data-testid='mockDonutChart'></div>),
-}));
-
-jest.mock('@mantine/core', () => ({
-  __esModule: true,
-  ...jest.requireActual('@mantine/core'),
-  LoadingOverlay: ({ visible }: { visible: boolean }) => {
-    return visible ? <div data-testid='mockLoading'></div> : null;
-  },
 }));
 
 jest.mock('@/shared-modules/utils/hooks', () => ({
@@ -74,12 +66,10 @@ describe('DonutChartTileWithAuth', () => {
 
     render(<DonutChartTile {...props} />);
 
-    const loading = screen.queryByTestId('mockLoading');
     const title = screen.getByRole('heading', { name: 'TestDonutChartTile' });
     const chart = screen.getByTestId('mockDonutChart');
     const legend = chart.nextSibling;
 
-    expect(loading).toBeNull();
     expect(title).toBeVisible();
     expect(chart).toBeVisible();
     expect(legend).toHaveTextContent('CPU');
@@ -113,11 +103,9 @@ describe('DonutChartTileWithAuth', () => {
 
     render(<DonutChartTile {...props} />);
 
-    const loading = screen.queryByTestId('mockLoading');
     const title = screen.getByRole('heading', { name: 'TestDonutChartTile' });
     const chart = screen.queryByTestId('mockDonutChart');
 
-    expect(loading).toBeNull();
     expect(title).toBeVisible();
     expect(chart).toBeNull();
 
@@ -148,11 +136,9 @@ describe('DonutChartTileWithAuth', () => {
       valueFormatter: formatEnergyValue,
     };
 
-    render(<DonutChartTile {...props} />);
+    const { container } = render(<DonutChartTile {...props} />);
 
-    const loading = screen.getByTestId('mockLoading');
-
-    expect(loading).toBeVisible();
+    expect(container.querySelector('.mantine-Indicator-indicator')).toBeInTheDocument();
   });
 
   test('Render DonutChartTile with edit mode', () => {

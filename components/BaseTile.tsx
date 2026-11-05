@@ -22,7 +22,7 @@ import { useTranslations } from 'next-intl';
 
 import { Multiline } from '@/shared-modules/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import tileClasses from '@/styles/tile.module.css';
 
 /** Props for the BaseTile component. */

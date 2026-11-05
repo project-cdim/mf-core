@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2026 NEC Corporation.
+ * Copyright 2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -14,21 +14,7 @@
  * under the License.
  */
 
-import React from 'react';
-
-import { AppProps } from 'next/app';
-import { useRouter } from 'next/router';
-
-import '@luigi-project/core/luigi.css';
-import { MantineProvider } from '@mantine/core';
-import '@mantine/core/styles.css';
-import { NextIntlClientProvider } from 'next-intl';
-
-import { ErrorBoundary, Layout } from '@/shared-modules/components';
-
-import '@/styles/globals.css';
-
-import Index from '.';
+'use client';
 
 // Global error handler for Luigi localStorage errors (must be set before Luigi loads)
 if (typeof window !== 'undefined') {
@@ -52,8 +38,6 @@ if (typeof window !== 'undefined') {
     (event: PromiseRejectionEvent) => {
       if (isStorageRelatedError(event.reason)) {
         event.preventDefault();
-        // event.stopPropagation();
-        // event.stopImmediatePropagation();
       }
     },
     { capture: true }
@@ -64,8 +48,6 @@ if (typeof window !== 'undefined') {
     (event: ErrorEvent) => {
       if (isStorageRelatedError(event.error)) {
         event.preventDefault();
-        // event.stopPropagation();
-        // event.stopImmediatePropagation();
       }
     },
     { capture: true }
@@ -88,30 +70,10 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Renders the main application component.
+ * Renders nothing. Side effect only: installs global Luigi storage error suppressors.
  *
- * @param props {@link Props}
- * @returns JSX.Element, The rendered component.
+ * @returns null
  */
-function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  return (
-    <NextIntlClientProvider locale={router.locale} timeZone={timeZone} messages={pageProps.messages || {}}>
-      <MantineProvider>
-        <ErrorBoundary>
-          {Component === Index ? (
-            <Component {...pageProps} />
-          ) : (
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          )}
-        </ErrorBoundary>
-      </MantineProvider>
-    </NextIntlClientProvider>
-  );
+export default function LuigiErrorSuppressor() {
+  return null;
 }
-
-export default MyApp;

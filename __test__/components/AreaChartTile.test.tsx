@@ -22,7 +22,7 @@ import { useGraphViewPropsOfAll } from '@/shared-modules/utils/hooks';
 
 import { AreaChartTile } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 jest.mock('@mantine/core', () => ({
   __esModule: true,
@@ -68,7 +68,7 @@ describe('AreaChartTileWithAuth', () => {
 
     const chart = screen.getByTestId('mockGraphViewInner');
     expect(chart).toBeVisible();
-    expect(container).not.toDisplayLoader();
+    expect(container.querySelector('.mantine-Indicator-indicator')).not.toBeInTheDocument();
 
     const chartProps = (GraphViewInner as jest.Mock).mock.calls[0][0];
     expect(chartProps).toEqual(dummyData);
@@ -98,7 +98,7 @@ describe('AreaChartTileWithAuth', () => {
 
     const chart = screen.getByTestId('mockGraphViewInner');
     expect(chart).toBeVisible();
-    expect(container).not.toDisplayLoader();
+    expect(container.querySelector('.mantine-Indicator-indicator')).not.toBeInTheDocument();
 
     const chartProps = (GraphViewInner as jest.Mock).mock.calls[0][0];
     expect(chartProps).toEqual({ ...dummyData, link: undefined });
@@ -119,7 +119,7 @@ describe('AreaChartTileWithAuth', () => {
       areaChartValidating: true,
     });
     const { container } = render(<AreaChartTile deviceType='all' period='month' />);
-    expect(container).toDisplayLoader();
+    expect(container.querySelector('.mantine-Indicator-indicator')).toBeInTheDocument();
   });
 
   test('does not display menu when showMenu is false', () => {

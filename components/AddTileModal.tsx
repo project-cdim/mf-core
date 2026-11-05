@@ -31,7 +31,6 @@ import NumberWarning from '../public/images/tileImg/number-warning.png';
 import NumberCritical from '../public/images/tileImg/number-critical.png';
 import NumberPlain from '../public/images/tileImg/number-plain.png';
 import NumberOk from '../public/images/tileImg/number-ok.png';
-import NumberDisabled from '../public/images/tileImg/number-disabled.png';
 import NumberSuspended from '../public/images/tileImg/number-suspended.png';
 import NumberUnavailable from '../public/images/tileImg/number-unavailable.png';
 import NumberAllocated from '../public/images/tileImg/number-allocated.png';
@@ -65,12 +64,11 @@ export const AddTileModal = ({
     [t('Healthy Nodes')]: { tileType: 'number', targetData: 'node', state: 'ok' },
     [t('Critical Nodes')]: { tileType: 'number', targetData: 'node', state: 'critical' },
     [t('Warning Nodes')]: { tileType: 'number', targetData: 'node', state: 'warning' },
-    [t('Disabled Nodes')]: { tileType: 'number', targetData: 'node', state: 'disabled' },
     [t('Total Resources')]: { tileType: 'number', targetData: 'resource', state: 'all' },
     [t('Healthy Resources')]: { tileType: 'number', targetData: 'resource', state: 'ok' },
     [t('Critical Resources')]: { tileType: 'number', targetData: 'resource', state: 'critical' },
     [t('Warning Resources')]: { tileType: 'number', targetData: 'resource', state: 'warning' },
-    [t('Disabled Resources')]: { tileType: 'number', targetData: 'resource', state: 'disabled' },
+    [t('Not Detected Resources')]: { tileType: 'number', targetData: 'resource', state: 'notDetected' },
     [t('Allocated Resources')]: { tileType: 'progress', targetData: 'resource', state: 'allocated' },
     [t('Unallocated Resources')]: { tileType: 'number', targetData: 'resource', state: 'unallocated' },
     [t('Design Available Resources')]: { tileType: 'number', targetData: 'resource', state: 'designAvailable' },
@@ -87,6 +85,7 @@ export const AddTileModal = ({
       state: 'failed',
     },
     [`${t('Alerts')} (Critical)`]: { tileType: 'number', targetData: 'alert', severity: 'critical' },
+    [`${t('Alerts')} (Warning)`]: { tileType: 'number', targetData: 'alert', severity: 'warning' },
     [t('Energy Consumptions')]: {
       tileType: 'area-chart',
       targetData: 'energy-consumptions',
@@ -118,12 +117,11 @@ export const AddTileModal = ({
     [t('Healthy Nodes')]: { w: 2, h: 2 },
     [t('Critical Nodes')]: { w: 2, h: 2 },
     [t('Warning Nodes')]: { w: 2, h: 2 },
-    [t('Disabled Nodes')]: { w: 2, h: 2 },
     [t('Total Resources')]: { w: 2, h: 2 },
     [t('Healthy Resources')]: { w: 2, h: 2 },
     [t('Critical Resources')]: { w: 2, h: 2 },
     [t('Warning Resources')]: { w: 2, h: 2 },
-    [t('Disabled Resources')]: { w: 2, h: 2 },
+    [t('Not Detected Resources')]: { w: 2, h: 2 },
     [t('Allocated Resources')]: { w: 2, h: 2 },
     [t('Unallocated Resources')]: { w: 2, h: 2 },
     [t('Design Available Resources')]: { w: 2, h: 2 },
@@ -132,6 +130,7 @@ export const AddTileModal = ({
     [`${t('LayoutApplies.number')} ${t('Suspended.status')}`]: { w: 2, h: 2 },
     [`${t('LayoutApplies.number')} ${t('Failed')}`]: { w: 2, h: 2 },
     [`${t('Alerts')} (Critical)`]: { w: 2, h: 2 },
+    [`${t('Alerts')} (Warning)`]: { w: 2, h: 2 },
     [t('Energy Consumptions')]: { w: 6, h: 4 },
     [t('Energy Consumptions ratio by type')]: { w: 4, h: 4 },
     [`${t('Energy Consumptions')} ${t('4 weeks comparison')}`]: { w: 16, h: 4 },
@@ -214,11 +213,6 @@ const RadioCards = () => {
       description: t('Number of nodes with resources in a warning state'),
     },
     {
-      img: NumberDisabled,
-      title: t('Disabled Nodes'),
-      description: t('Number of nodes with resources in a disabled state'),
-    },
-    {
       img: NumberPlain,
       title: t('Total Resources'),
       description: t('Number of managed resources'),
@@ -239,9 +233,9 @@ const RadioCards = () => {
       description: t('Number of resources in a warning state'),
     },
     {
-      img: NumberDisabled,
-      title: t('Disabled Resources'),
-      description: t('Number of resources in a disabled state'),
+      img: NumberCritical,
+      title: t('Not Detected Resources'),
+      description: t('Number of resources in a not detected state'),
     },
     {
       img: NumberAllocated,
@@ -257,7 +251,7 @@ const RadioCards = () => {
       img: NumberOk,
       title: t('Design Available Resources'),
       description: t(
-        'Number of resources available for layout design (resources with OK health status, Enabled resource status, detectable resources, and not under maintenance)'
+        'Number of resources available for layout design (resources that are healthy(OK), detectable resources, and not under maintenance)'
       ),
     },
     {
@@ -286,6 +280,11 @@ const RadioCards = () => {
       img: NumberCritical,
       title: `${t('Alerts')} (Critical)`,
       description: t('Number of alerts (Critical)'),
+    },
+    {
+      img: NumberWarning,
+      title: `${t('Alerts')} (Warning)`,
+      description: t('Number of alerts (Warning)'),
     },
     {
       img: AreaChart,

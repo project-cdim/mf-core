@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -17,14 +17,14 @@
 import { useContext, useMemo } from 'react';
 
 import { ChartLegend, DonutChart } from '@mantine/charts';
-import { Divider, LoadingOverlay, Stack, Title, getThemeColor, useMantineTheme } from '@mantine/core';
+import { Box, Divider, Indicator, Stack, Title, getThemeColor, useMantineTheme } from '@mantine/core';
 import { Payload } from 'recharts/types/component/DefaultLegendContent';
 
 import { Multiline, NoData, PageLink } from '@/shared-modules/components';
 import { CHART_COLORS } from '@/shared-modules/constant';
 import { donutChartDataType } from '@/shared-modules/utils/hooks/useEnergyDonutChartData';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 export type DonutChartTileProps = {
   /** The title of the NumberTile. Line breaks should be represented as `\n`. */
@@ -78,49 +78,50 @@ export const DonutChartTile = (props: DonutChartTileProps) => {
   const doNothing = () => void {};
 
   return (
-    <>
-      <LoadingOverlay visible={loading} />
-      <Stack justify='space-between' gap='10px' h='100%'>
-        <PageLink
-          title={linkTitle}
-          path={isEditMode ? undefined : link}
-          query={query}
-          color='rgb(55 65 81 / var(--tw-text-opacity))'
-        >
-          <Title order={4} ta='center'>
-            <Multiline text={title} />
-          </Title>
-        </PageLink>
-        <Divider />
-        <NoData isNoData={filteredData.length <= 0}>
-          <DonutChart
-            data={filteredData}
-            tooltipDataSource='segment'
-            chartLabel={totalEnergyString}
-            valueFormatter={valueFormatter}
-            size={160}
-            startAngle={90}
-            endAngle={450}
-            h='100%'
-            mx='auto'
-          />
-          <ChartLegend
-            payload={
-              filteredData
-                .map((d) => ({
-                  color: getThemeColor(d.color, theme),
-                  dataKey: d.name,
-                  value: d.name,
-                }))
-                .reverse() as Payload[]
-            }
-            onHighlight={doNothing}
-            legendPosition='middle'
-            centered
-            series={filteredData}
-          />
-        </NoData>
-      </Stack>
-    </>
+    <Indicator processing disabled={!loading} position='top-end' size={10} offset={4} h='100%' display='block'>
+      <Box h='100%'>
+        <Stack justify='space-between' gap='10px' h='100%'>
+          <PageLink
+            title={linkTitle}
+            path={isEditMode ? undefined : link}
+            query={query}
+            color='rgb(55 65 81 / var(--tw-text-opacity))'
+          >
+            <Title order={4} ta='center'>
+              <Multiline text={title} />
+            </Title>
+          </PageLink>
+          <Divider />
+          <NoData isNoData={filteredData.length <= 0}>
+            <DonutChart
+              data={filteredData}
+              tooltipDataSource='segment'
+              chartLabel={totalEnergyString}
+              valueFormatter={valueFormatter}
+              size={160}
+              startAngle={90}
+              endAngle={450}
+              h='100%'
+              mx='auto'
+            />
+            <ChartLegend
+              payload={
+                filteredData
+                  .map((d) => ({
+                    color: getThemeColor(d.color, theme),
+                    dataKey: d.name,
+                    value: d.name,
+                  }))
+                  .reverse() as Payload[]
+              }
+              onHighlight={doNothing}
+              legendPosition='middle'
+              centered
+              series={filteredData}
+            />
+          </NoData>
+        </Stack>
+      </Box>
+    </Indicator>
   );
 };

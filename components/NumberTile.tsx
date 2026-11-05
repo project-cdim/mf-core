@@ -15,14 +15,15 @@
  */
 
 import { useContext } from 'react';
+import { useLocale } from 'next-intl';
 
-import { Box, Group, LoadingOverlay, Stack, Text, Title } from '@mantine/core';
+import { Box, Group, Indicator, Stack, Text, Title } from '@mantine/core';
 
 import { Icon, Multiline, PageLink } from '@/shared-modules/components';
 import { useColorStyles } from '@/shared-modules/styles/styles';
 import { APPStatus } from '@/shared-modules/types';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 /** Props for the NumberTile component. */
 export type NumberTileProps = {
@@ -46,6 +47,18 @@ export type NumberTileProps = {
   loading: boolean;
 };
 
+const getNumberTileSizes = (digits: number, isAllStatus: boolean) => {
+  const threshold = isAllStatus ? 7 : 6;
+  const thresholdMedium = isAllStatus ? 5 : 4;
+  const isLarge = digits >= threshold;
+  const isMedium = !isLarge && digits >= thresholdMedium;
+  return {
+    fz: isLarge ? '30px' : isMedium ? '36px' : '50px',
+    iconSize: isLarge ? 26 : isMedium ? 30 : 40,
+    gap: isLarge ? 15 : isMedium ? 10 : 5,
+  };
+};
+
 /**
  * A component that displays a number tile with a title, number, and link.
  * @param props - The props for the NumberTile component.
@@ -54,40 +67,46 @@ export type NumberTileProps = {
 export const NumberTile = (props: NumberTileProps) => {
   const { title, status, number, linkTitle, link, linkTarget, query, loading } = props;
   const isEditMode = useContext(EditModeContext);
-  const { bg } = useBackgroundColor(status);
+  const displayStatus = Number.isInteger(number) && number === 0 ? undefined : status;
+  const { bg } = useBackgroundColor(displayStatus);
+  const locale = useLocale();
+
+  const digits = Number.isInteger(number) ? String(number).length : 1;
+  const { fz, iconSize, gap } = getNumberTileSizes(digits, displayStatus === ('All' as APPStatus));
 
   return (
-    <Box h='100%'>
-      <LoadingOverlay visible={loading} />
-      <Stack
-        styles={{ root: { backgroundColor: `${bg || 'transparent'}` } }}
-        justify='center'
-        gap='5px'
-        h='calc(100% + 32px)'
-        m='-16px'
-        p='md'
-      >
-        <Title size='h6'>
-          <Multiline text={title} />
-        </Title>
-        <Group justify='center' align='end' gap='5px' wrap='nowrap'>
-          <Icon status={status} />
-          <PageLink
-            title={linkTitle}
-            path={isEditMode ? undefined : link}
-            query={query}
-            color='rgb(55 65 81 / var(--tw-text-opacity))'
-            display='block'
-            h='100%'
-            target={linkTarget}
-          >
-            <Text fz='50px' fw={700} lh={1}>
-              {Number.isInteger(number) ? number : '-'}
-            </Text>
-          </PageLink>
-        </Group>
-      </Stack>
-    </Box>
+    <Indicator processing disabled={!loading} position='top-end' size={10} offset={4} h='100%' display='block'>
+      <Box h='100%'>
+        <Stack
+          styles={{ root: { backgroundColor: `${bg || 'white'}` } }}
+          justify='center'
+          gap={gap}
+          h='calc(100% + 32px)'
+          m='-16px'
+          p='md'
+        >
+          <Title size='h6'>
+            <Multiline text={title} />
+          </Title>
+          <Group justify='center' align='center' gap='5px' wrap='nowrap'>
+            <Icon status={displayStatus} size={iconSize} />
+            <PageLink
+              title={linkTitle}
+              path={isEditMode ? undefined : link}
+              query={query}
+              color='rgb(55 65 81 / var(--tw-text-opacity))'
+              display='block'
+              h='100%'
+              target={linkTarget}
+            >
+              <Text fz={fz} fw={700} lh="1" h='100%' style={{ display: "flex", alignItems: "center" }}>
+                {Number.isInteger(number) ? (number as number).toLocaleString(locale) : '-'}
+              </Text>
+            </PageLink>
+          </Group>
+        </Stack>
+      </Box>
+    </Indicator>
   );
 };
 
@@ -99,7 +118,7 @@ export const useBackgroundColor = (status?: APPStatus | undefined) => {
     ['Warning', yellow.backgroundColor],
     ['Suspended', yellow.backgroundColor],
     ['OK', null],
-    ['Disabled', gray.backgroundColor],
+    ['NotDetected', red.backgroundColor],
     ['DesignAvailable', null],
     ['DesignUnavailable', gray.backgroundColor],
     ['Maintenance', gray.backgroundColor],

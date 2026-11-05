@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -15,13 +15,14 @@
  */
 
 import { JSX, useContext } from 'react';
+import { useLocale } from 'next-intl';
 
-import { Group, LoadingOverlay, Progress, Stack, Text, Title } from '@mantine/core';
+import { Box, Group, Indicator, Progress, Stack, Text, Title } from '@mantine/core';
 
 import { Multiline, PageLink } from '@/shared-modules/components';
 import classes from '@/shared-modules/styles/styles.module.css';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 export type ProgressTileProps = {
   /** The title of the ProgressTile. */
@@ -46,6 +47,16 @@ export type ProgressTileProps = {
   };
 };
 
+const getProgressTileSizes = (totalDigits: number) => {
+  const isCompact = totalDigits >= 12;
+  const isMedium = !isCompact && totalDigits >= 8;
+  return {
+    valueFz: isCompact ? '20px' : isMedium ? '28px' : '40px',
+    allValueFz: isCompact ? 'sm' : isMedium ? 'md' : ('xl' as const),
+    gap: isCompact ? 15 : isMedium ? 10 : 5,
+  };
+};
+
 /**
  * A component that displays the progress resources.
  *
@@ -56,44 +67,50 @@ export const ProgressTile = (props: ProgressTileProps) => {
   const isEditMode = useContext(EditModeContext);
   const { title, value, allValue, bg, icon, linkTitle, link, query, loading } = props;
 
+  const totalDigits = Number.isInteger(value) && Number.isInteger(allValue) ? String(value).length + String(allValue).length : 1;
+  const { valueFz, allValueFz, gap } = getProgressTileSizes(totalDigits);
+
+  const locale = useLocale();
+
   return (
-    <>
-      <LoadingOverlay visible={loading} />
-      <Stack className={`${bg && classes[bg]}`} justify='center' gap='5px' h='calc(100% + 32px)' m='-16px' p='md'>
-        <Title size='h6'>
-          <Multiline text={title} />
-        </Title>
-        <Stack justify='center' gap='5px'>
-          <Group align='baseline' justify='center' gap={0} wrap='nowrap'>
-            {icon}
-            <PageLink
-              title={linkTitle}
-              path={isEditMode ? undefined : link}
-              query={query}
-              color='rgb(55 65 81 / var(--tw-text-opacity))'
-              display='block'
-            >
-              <Text fz='40px' fw={700} lh={1}>
-                {Number.isInteger(value) ? value : '- '}
+    <Indicator processing disabled={!loading} position='top-end' size={10} offset={4} h='100%' display='block'>
+      <Box h='100%'>
+        <Stack className={`${bg && classes[bg]}`} justify='center' gap='5px' h='calc(100% + 32px)' m='-16px' p='md'>
+          <Title size='h6'>
+            <Multiline text={title} />
+          </Title>
+          <Stack justify='center' gap={gap}>
+            <Group align='baseline' justify='center' gap={0} wrap='nowrap'>
+              {icon}
+              <PageLink
+                title={linkTitle}
+                path={isEditMode ? undefined : link}
+                query={query}
+                color='rgb(55 65 81 / var(--tw-text-opacity))'
+                display='block'
+              >
+                <Text fz={valueFz} fw={700} lh={1}>
+                  {Number.isInteger(value) ? (value as number).toLocaleString(locale) : '-'}
+                </Text>
+              </PageLink>
+              <Text
+                fz={allValueFz}
+                fw={500}
+                lh={1}
+                styles={{
+                  root: {
+                    whiteSpace: 'nowrap',
+                  },
+                }}
+              >
+                {`/${Number.isInteger(allValue) ? (allValue as number).toLocaleString(locale) : '-'}`}
               </Text>
-            </PageLink>
-            <Text
-              fz='xl'
-              fw={500}
-              lh={1}
-              styles={{
-                root: {
-                  whiteSpace: 'nowrap',
-                },
-              }}
-            >
-              {`/${Number.isInteger(allValue) ? allValue : ' -'}`}
-            </Text>
-          </Group>
-          <CustomProgress value={value} allValue={allValue} />
+            </Group>
+            <CustomProgress value={value} allValue={allValue} />
+          </Stack>
         </Stack>
-      </Stack>
-    </>
+      </Box>
+    </Indicator>
   );
 };
 

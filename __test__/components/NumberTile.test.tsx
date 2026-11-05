@@ -23,7 +23,7 @@ import { APPStatus } from '@/shared-modules/types';
 
 import { NumberTile, NumberTileProps, useBackgroundColor } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 jest.mock('@tabler/icons-react', () => ({
   ...jest.requireActual('@tabler/icons-react'),
@@ -105,7 +105,7 @@ describe('NumberTile', () => {
     const title = screen.getByRole('heading', { name: props.title });
     const number = screen.getByText(props.number.toString());
     const icon = screen.getByTestId('mockIconForOK_Available');
-    const bg = 'background-color: transparent';
+    const bg = 'background-color: white';
 
     const root = title.parentElement as HTMLElement;
     expect(root).toHaveStyle(bg);
@@ -121,7 +121,7 @@ describe('NumberTile', () => {
     const title = screen.getByRole('heading', { name: props.title });
     const number = screen.getByText(props.number.toString());
     const icon = screen.getByTestId('mockIconForDisabled_Unavailable');
-    const bg = 'background-color: rgb(222, 226, 230)';
+    const bg = 'background-color: white';
 
     const root = title.parentElement as HTMLElement;
     expect(root).toHaveStyle(bg);
@@ -136,7 +136,7 @@ describe('NumberTile', () => {
     render(<NumberTile {...props} />);
     const title = screen.getByRole('heading', { name: props.title });
     const number = screen.getByText(props.number.toString());
-    const bg = 'background-color: transparent';
+    const bg = 'background-color: white';
 
     const root = title.parentElement as HTMLElement;
     expect(root).toHaveStyle(bg);
@@ -171,10 +171,38 @@ describe('NumberTile', () => {
     expect(icon).toBeVisible();
   });
 
+  test('render NumberTile with medium-size layout (4-digit number)', () => {
+    // digits=4 triggers isMedium=true (threshold=6, thresholdMedium=4 for non-All status)
+    const props = { title: 'title', status: 'Critical' as APPStatus, number: 1234, loading: false };
+    render(<NumberTile {...props} />);
+    expect(screen.getByText('1,234')).toBeVisible();
+  });
+
+  test('render NumberTile with large-size layout (6-digit number)', () => {
+    // digits=6 triggers isLarge=true (threshold=6 for non-All status)
+    const props = { title: 'title', status: 'Critical' as APPStatus, number: 123456, loading: false };
+    render(<NumberTile {...props} />);
+    expect(screen.getByText('123,456')).toBeVisible();
+  });
+
+  test('render NumberTile with medium-size layout for All status (5-digit number)', () => {
+    // isAllStatus=true: threshold=7, thresholdMedium=5; digits=5 → isMedium=true
+    const props = { title: 'title', status: 'All' as APPStatus, number: 12345, loading: false };
+    render(<NumberTile {...props} />);
+    expect(screen.getByText('12,345')).toBeVisible();
+  });
+
+  test('render NumberTile with large-size layout for All status (7-digit number)', () => {
+    // isAllStatus=true: threshold=7; digits=7 → isLarge=true
+    const props = { title: 'title', status: 'All' as APPStatus, number: 1234567, loading: false };
+    render(<NumberTile {...props} />);
+    expect(screen.getByText('1,234,567')).toBeVisible();
+  });
+
   test('if loading render a loader', () => {
     const props: NumberTileProps = { title: 'title', status: 'OK', number: 5, loading: true };
     const { container } = render(<NumberTile {...props} />);
-    expect(container).toDisplayLoader();
+    expect(container.querySelector('.mantine-Indicator-indicator')).toBeInTheDocument();
   });
 
   test('render NumberTile in edit mode', () => {
@@ -209,7 +237,7 @@ describe('useBackgroundColor', () => {
     ['Warning', '#ffec99'],
     ['Suspended', '#ffec99'],
     ['OK', undefined],
-    ['Disabled', '#dee2e6'],
+    ['Disabled', undefined],
     ['DesignAvailable', undefined],
     ['DesignUnavailable', '#dee2e6'],
     ['Maintenance', '#dee2e6'],

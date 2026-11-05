@@ -17,7 +17,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import { Tile } from '@/components';
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { Box } from '@mantine/core';
 
 const meta: Meta<typeof Tile> = {

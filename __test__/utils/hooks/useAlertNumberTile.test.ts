@@ -37,11 +37,15 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-// Mock useAlertNumberData
-jest.mock('@/utils/hooks/useAlertNumberData');
+// Mock useAlertBadgeError
+jest.mock('@/utils/hooks/useAlertBadgeError');
+const mockUseAlertBadgeError = require('@/utils/hooks/useAlertBadgeError')
+  .useAlertBadgeError as jest.MockedFunction<any>;
 
-const mockUseAlertNumberData = require('@/utils/hooks/useAlertNumberData')
-  .useAlertNumberData as jest.MockedFunction<any>;
+// Mock useAlertSeverityCounts
+jest.mock('@/utils/hooks/useAlertSeverityCounts');
+const mockUseAlertSeverityCounts = require('@/utils/hooks/useAlertSeverityCounts')
+  .useAlertSeverityCounts as jest.MockedFunction<any>;
 
 // Mock useSetErrorInContext
 jest.mock('@/components', () => ({
@@ -53,20 +57,17 @@ describe('useAlertNumberTile', () => {
     // Reset mocks before each test
     jest.clearAllMocks();
 
-    mockUseAlertNumberData.mockReturnValue({
-      alertError: null,
-      alertValidating: false,
-      getAlertCount: jest.fn((severity: string) => {
-        const severityCounts: Record<string, number> = {
-          critical: 5,
-          major: 0,
-          minor: 0,
-          warning: 0,
-          indeterminate: 0,
-          informational: 0,
-        };
-        return severityCounts[severity] || 0;
-      }),
+    // Mock useAlertBadgeError to return no error
+    mockUseAlertBadgeError.mockReturnValue(null);
+
+    // Mock useAlertSeverityCounts to return counts
+    mockUseAlertSeverityCounts.mockReturnValue({
+      critical: 5,
+      major: 0,
+      minor: 0,
+      warning: 0,
+      indeterminate: 0,
+      informational: 0,
     });
   });
   test('should return the correct props for critical severity', () => {
@@ -87,7 +88,7 @@ describe('useAlertNumberTile', () => {
 
     expect(result.current).toEqual({
       number: 0,
-      status: 'Critical',
+      status: 'Warning',
       linkTitle: 'Alerta Web UI',
       link: 'http://cdim-server:8020/alerts?q=severity%3Awarning#status:open',
       linkTarget: '_blank',
@@ -100,7 +101,7 @@ describe('useAlertNumberTile', () => {
 
     expect(result.current).toEqual({
       number: 0,
-      status: 'Critical',
+      status: undefined,
       linkTitle: 'Alerta Web UI',
       link: 'http://cdim-server:8020/alerts?q=severity%3Ainformational#status:open',
       linkTarget: '_blank',
@@ -108,12 +109,15 @@ describe('useAlertNumberTile', () => {
     });
   });
 
-  test('should return 0 when data is null', () => {
-    // Mock useAlertNumberData to return getAlertCount that returns 0
-    mockUseAlertNumberData.mockReturnValue({
-      alertError: null,
-      alertValidating: false,
-      getAlertCount: jest.fn(() => 0),
+  test('should return 0 when severity count is 0', () => {
+    // Mock useAlertSeverityCounts to return 0 for all severities
+    mockUseAlertSeverityCounts.mockReturnValue({
+      critical: 0,
+      major: 0,
+      minor: 0,
+      warning: 0,
+      indeterminate: 0,
+      informational: 0,
     });
 
     const { result } = renderHook(() => useAlertNumberTile('critical'));
@@ -122,43 +126,40 @@ describe('useAlertNumberTile', () => {
   });
 
   test('should handle loading state correctly', () => {
-    // Mock useAlertNumberData to return validating state
-    mockUseAlertNumberData.mockReturnValue({
-      alertError: null,
-      alertValidating: true,
-      getAlertCount: jest.fn(() => 5),
-    });
+    // Mock useAlertSeverityCounts to return undefined (loading state)
+    mockUseAlertSeverityCounts.mockReturnValue(undefined);
 
     const { result } = renderHook(() => useAlertNumberTile('critical'));
 
     expect(result.current.loading).toBe(true);
+    expect(result.current.number).toBeUndefined();
   });
 
   test('should handle missing severityCounts correctly', () => {
-    // Mock useAlertNumberData to return getAlertCount that returns 0 for missing data
-    mockUseAlertNumberData.mockReturnValue({
-      alertError: null,
-      alertValidating: false,
-      getAlertCount: jest.fn(() => 0),
-    });
+    // Mock useAlertSeverityCounts to return undefined
+    mockUseAlertSeverityCounts.mockReturnValue(undefined);
 
     const { result } = renderHook(() => useAlertNumberTile('critical'));
 
-    expect(result.current.number).toBe(0);
+    expect(result.current.number).toBeUndefined();
+  });
+
+  test('should handle error state correctly', () => {
+    // Mock useAlertBadgeError to return an error
+    mockUseAlertBadgeError.mockReturnValue(new Error('Test error'));
+
+    const { result } = renderHook(() => useAlertNumberTile('critical'));
+
+    expect(result.current.number).toBeUndefined();
+    expect(result.current.loading).toBe(false);
   });
 
   test('should handle empty NEXT_PUBLIC_URL_ALERTA_WEBUI environment variable', () => {
     // Save original env var
     const originalEnv = process.env.NEXT_PUBLIC_URL_ALERTA_WEBUI;
 
-    // Set env var to undefined to test the fallback (covers line 50)
+    // Set env var to undefined to test the fallback
     delete process.env.NEXT_PUBLIC_URL_ALERTA_WEBUI;
-
-    mockUseAlertNumberData.mockReturnValue({
-      alertError: null,
-      alertValidating: false,
-      getAlertCount: jest.fn(() => 5),
-    });
 
     const { result } = renderHook(() => useAlertNumberTile('critical'));
 
@@ -168,5 +169,17 @@ describe('useAlertNumberTile', () => {
     if (originalEnv !== undefined) {
       process.env.NEXT_PUBLIC_URL_ALERTA_WEBUI = originalEnv;
     }
+  });
+
+  test('should return 0 for missing severity in counts object', () => {
+    // Mock useAlertSeverityCounts to return an object without the 'major' severity
+    mockUseAlertSeverityCounts.mockReturnValue({
+      critical: 5,
+      warning: 2,
+    });
+
+    const { result } = renderHook(() => useAlertNumberTile('major' as any));
+
+    expect(result.current.number).toBe(0);
   });
 });

@@ -21,7 +21,7 @@ import { render } from '@/shared-modules/__test__/test-utils';
 
 import { BaseTile, BaseTileProps } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 describe('BaseTile', () => {
   test('With permission and edit mode, render children and icon', () => {

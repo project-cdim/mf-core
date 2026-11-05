@@ -1,4 +1,4 @@
-# Copyright 2025 NEC Corporation.
+# Copyright 2025-2026 NEC Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:latest
+FROM registry.access.redhat.com/ubi9/nodejs-22-minimal:1-1776863671@sha256:670c207e6872898228015fa8ec2e4165cfa13089a9e5fccb4f9c6d6cda2811ba
 
 ARG USERNAME
 ARG USER_UID
@@ -20,8 +20,9 @@ ARG USER_GID
 
 # Install required packages and add user
 USER root
-RUN microdnf update -y && \
-    microdnf install -y git tar shadow-utils sudo && \
+# Note: Pinning is avoided to prevent build errors and maintain reproducibility.
+# hadolint ignore=DL3041
+RUN microdnf install -y git sudo && \
     microdnf clean all && \
     groupadd --gid $USER_GID $USERNAME && \
     useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
@@ -32,11 +33,10 @@ RUN microdnf update -y && \
 WORKDIR /opt/app-root/src/workspace
 COPY package*.json ./
 
-# Install node.js packages
-RUN npm install
-
-# Change owner
-RUN chown -R $USERNAME:$USERNAME /opt/app-root/src/
+# Install node.js packages and set ownership
+RUN npm install \
+    && npm cache clean --force \
+    && chown -R $USERNAME:$USERNAME /opt/app-root/src/
 
 # Switch user
 USER $USERNAME

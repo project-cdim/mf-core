@@ -21,7 +21,7 @@ import { formatEnergyValue } from '@/shared-modules/utils';
 import '@/styles/globals.css';
 
 import { BarChartTile } from '@/components';
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { compareBarChartDataType } from '@/utils/hooks';
 import { Card } from '@mantine/core';
 

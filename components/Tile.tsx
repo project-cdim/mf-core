@@ -60,7 +60,6 @@ const renderNumberTile = (
         ok: t('Healthy Nodes'),
         critical: t('Critical Nodes'),
         warning: t('Warning Nodes'),
-        disabled: t('Disabled Nodes'),
       };
       return (
         <BaseTile tileTitle={title[state]} deleteTile={deleteTile} hasPermission={hasViewResource}>
@@ -75,7 +74,7 @@ const renderNumberTile = (
         ok: t('Healthy Resources'),
         critical: t('Critical Resources'),
         warning: t('Warning Resources'),
-        disabled: t('Disabled Resources'),
+        notDetected: t('Not Detected Resources'),
         unallocated: t('Unallocated Resources'),
         designAvailable: t('Design Available Resources'),
         designUnavailable: t('Design Unavailable Resources'),

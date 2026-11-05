@@ -21,7 +21,7 @@ import '@/styles/globals.css';
 
 import { ProgressTile } from '@/components';
 import { Icon } from '@/shared-modules/components/Icon';
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { Card } from '@mantine/core';
 
 const meta: Meta<typeof ProgressTile> = {

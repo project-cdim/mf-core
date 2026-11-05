@@ -18,7 +18,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Card } from '@mantine/core';
 
 import { DonutChartTile } from '@/components';
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { formatEnergyValue } from '@/shared-modules/utils';
 
 const meta: Meta<typeof DonutChartTile> = {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2026 NEC Corporation.
+ * Copyright 2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -14,9 +14,9 @@
  * under the License.
  */
 
-import { createContext, useContext, useState } from 'react';
+'use client';
 
-import { GetStaticProps } from 'next';
+import { createContext, useContext, useState } from 'react';
 
 import { Box, Button, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -27,49 +27,15 @@ import { SWRConfig } from 'swr';
 import type { SWRConfiguration } from 'swr';
 
 import { MessageBox } from '@/shared-modules/components';
-import { fetcher } from '@/shared-modules/utils';
+import { fetcher, getNumberFromEnv } from '@/shared-modules/utils';
 
 import { TileData, TileDataItem, TileSize } from '@/types/TileData';
 
 import { AddTileModal, DashboardGrid, ErrorsContext, ErrorsContextProvider, Tile } from '@/components';
 
 import { useGetLayout, useUserId } from '@/utils/hooks';
-import AlertaSilentGetCode from '@/components/AlertaSilentGetCode';
-
-/**
- * Retrieves the static props for the Home page.
- *
- * @param context - The context object containing the locale.
- * @param context.locale - The locale of the page.
- * @returns  The static props object.
- */
-export const getStaticProps: GetStaticProps = async ({ locale }) => ({
-  props: {
-    // You can get the messages from anywhere you like. The recommended
-    // pattern is to put them in JSON files separated by locale and read
-    // the desired one based on the `locale` received from Next.js.
-    // messages: (await import(`../../messages/${locale}.json`)).default,
-    messages: (await import(`@/shared-modules/public/locales/${locale}/common.json`)).default,
-  },
-});
 
 export const EditModeContext = createContext<boolean>(false);
-
-/**
- * Retrieves a number value from the environment variables.
- *
- * @param envName - The name of the environment variable.
- * @returns The number value from the environment variable, or undefined if the value is not a valid number.
- */
-export const getNumberFromEnv = (envName: string): number | undefined => {
-  const value = Number(process.env[envName]);
-
-  if (Number.isNaN(value)) {
-    return undefined;
-  } else {
-    return value;
-  }
-};
 
 /**
  * Renders the Home component.
@@ -77,8 +43,8 @@ export const getNumberFromEnv = (envName: string): number | undefined => {
  * @returns The rendered Home component.
  */
 export default function Home() {
-  const envInterval = getNumberFromEnv('NEXT_PUBLIC_DASHBOARD_INTERVAL_SECONDS');
-  const DEFAULTINTERVAL = 60;
+  const envInterval = getNumberFromEnv(process.env.NEXT_PUBLIC_DASHBOARD_INTERVAL_SECONDS);
+  const DEFAULTINTERVAL = 30;
   const ONESECOND = 1000;
   const interval =
     envInterval != undefined && envInterval !== 0 ? envInterval * ONESECOND : DEFAULTINTERVAL * ONESECOND;
@@ -86,6 +52,9 @@ export default function Home() {
   const SWR_OPTIONS: SWRConfiguration = {
     fetcher: fetcher,
     refreshInterval: interval,
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   };
   return (
     <SWRConfig value={SWR_OPTIONS}>
@@ -222,14 +191,6 @@ function HomeMain() {
           addTile(addData);
           handlers.close();
           return;
-        }}
-      />
-      <AlertaSilentGetCode
-        onCode={() => {
-          // console.log('Auth code received:', code);
-        }}
-        onError={(error) => {
-          console.error('Auth error:', error);
         }}
       />
     </EditModeContext.Provider>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -23,21 +23,13 @@ import { formatEnergyValue } from '@/shared-modules/utils';
 
 import { BarChartTile, BarChartTileProps, formatEnergyValueWithPrefix } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 import { compareBarChartDataType } from '@/utils/hooks';
 
 jest.mock('@mantine/charts', () => ({
   __esModule: true,
   ...jest.requireActual('@mantine/charts'),
   BarChart: jest.fn().mockReturnValue(<div data-testid='mockBarChart'></div>),
-}));
-
-jest.mock('@mantine/core', () => ({
-  __esModule: true,
-  ...jest.requireActual('@mantine/core'),
-  LoadingOverlay: ({ visible }: { visible: boolean }) => {
-    return visible ? <div data-testid='mockLoading'></div> : null;
-  },
 }));
 
 jest.mock('@/utils/hooks', () => ({
@@ -82,7 +74,6 @@ describe('BarChartTileWithAuth', () => {
 
     render(<BarChartTile {...props} />);
 
-    const loading = screen.queryByTestId('mockLoading');
     const title = screen.getByRole('heading', { name: 'TestBarChartTile' });
     const subTitle = screen.getByText('TestSubTitle');
     const chart = screen.getByTestId('mockBarChart');
@@ -91,7 +82,6 @@ describe('BarChartTileWithAuth', () => {
     const previousTotal = screen.getByText('previous : 90 Wh');
     const lastTotal = screen.getByText('last : 100 Wh');
 
-    expect(loading).toBeNull();
     expect(title).toBeVisible();
     expect(subTitle).toBeVisible();
     expect(chart).toBeVisible();
@@ -135,7 +125,6 @@ describe('BarChartTileWithAuth', () => {
 
     render(<BarChartTile {...props} />);
 
-    const loading = screen.queryByTestId('mockLoading');
     const title = screen.getByRole('heading', { name: 'TestBarChartTile' });
     const subTitle = screen.getByText('TestSubTitle');
     const chart = screen.getByTestId('mockBarChart');
@@ -144,7 +133,6 @@ describe('BarChartTileWithAuth', () => {
     const previousTotal = screen.getByText('previous : 90 Wh');
     const lastTotal = screen.getByText('last : 100 Wh');
 
-    expect(loading).toBeNull();
     expect(title).toBeVisible();
     expect(subTitle).toBeVisible();
     expect(chart).toBeVisible();
@@ -177,7 +165,6 @@ describe('BarChartTileWithAuth', () => {
 
     render(<BarChartTile {...props} />);
 
-    const loading = screen.queryByTestId('mockLoading');
     const title = screen.getByRole('heading', { name: 'TestBarChartTile' });
     const subTitle = screen.getByText('TestSubTitle');
     const chart = screen.queryByTestId('mockBarChart');
@@ -187,7 +174,6 @@ describe('BarChartTileWithAuth', () => {
     const previousTotal = screen.queryByText('previous : - Wh');
     const lastTotal = screen.queryByText('last : - Wh');
 
-    expect(loading).toBeNull();
     expect(title).toBeVisible();
     expect(subTitle).toBeVisible();
     expect(chart).toBeNull();
@@ -226,11 +212,9 @@ describe('BarChartTileWithAuth', () => {
       previousTotal: null,
     };
 
-    render(<BarChartTile {...props} />);
+    const { container } = render(<BarChartTile {...props} />);
 
-    const loading = screen.getByTestId('mockLoading');
-
-    expect(loading).toBeVisible();
+    expect(container.querySelector('.mantine-Indicator-indicator')).toBeInTheDocument();
   });
 
   test('Render BarChartTile with edit mode', () => {

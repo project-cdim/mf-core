@@ -16,7 +16,7 @@
 
 import { useContext } from 'react';
 
-import { LoadingOverlay } from '@mantine/core';
+import { Box, Indicator } from '@mantine/core';
 
 import { GraphViewInner } from '@/shared-modules/components';
 import { APIDeviceType } from '@/shared-modules/types';
@@ -24,7 +24,7 @@ import { useGraphViewPropsOfAll } from '@/shared-modules/utils/hooks';
 
 import { useSetErrorInContext } from '@/components';
 
-import { EditModeContext } from '@/pages/home';
+import { EditModeContext } from '@/app/[lng]/home/HomeContent';
 
 /**
  * Renders an area chart tile component.
@@ -47,9 +47,18 @@ export const AreaChartTile = (props: {
   }
 
   return (
-    <>
-      <LoadingOverlay visible={areaChartValidating} />
-      <GraphViewInner {...areaChartProps} loading={areaChartValidating} showMenu={false} />
-    </>
+    <Indicator
+      processing
+      disabled={!areaChartValidating}
+      position='top-end'
+      size={10}
+      offset={4}
+      h='100%'
+      display='block'
+    >
+      <Box h='100%'>
+        <GraphViewInner {...areaChartProps} loading={areaChartValidating} showMenu={false} />
+      </Box>
+    </Indicator>
   );
 };

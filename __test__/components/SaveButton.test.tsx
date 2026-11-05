@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -23,7 +23,7 @@ import { render } from '@/shared-modules/__test__/test-utils';
 
 import { ErrorMessageContextType, ErrorsContext, ErrorsContextProvider } from '@/components';
 
-import { EditModeContext, SaveButton } from '@/pages/home';
+import { EditModeContext, SaveButton } from '@/app/[lng]/home/HomeContent';
 
 describe('SaveButton', () => {
   test('click save button', async () => {

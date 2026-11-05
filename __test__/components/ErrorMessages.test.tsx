@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 NEC Corporation.
+ * Copyright 2025-2026 NEC Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -22,7 +22,7 @@ import { render } from '@/shared-modules/__test__/test-utils';
 
 import { ErrorsContext, ErrorsContextProvider } from '@/components';
 
-import { EditModeContext, ErrorMessages } from '@/pages/home';
+import { EditModeContext, ErrorMessages } from '@/app/[lng]/home/HomeContent';
 
 describe('ErrorMessages', () => {
   test('When error message set, show that message', () => {

@@ -18,6 +18,7 @@
 import oidcProvider from '@luigi-project/plugin-auth-oidc';
 
 import { i18nProvider } from './i18n/i18n-provider';
+import { getAlertBadgeCount } from '../utils/alertBadgeState';
 
 const jwt = require('jsonwebtoken');
 
@@ -109,16 +110,23 @@ i18nProvider.init().then(() => {
         return roles.some((role) => targetCategory === roleToCategory[role]);
       },
       nodes: () => {
+        // Locale
         const locale = Luigi.i18n().getCurrentLocale();
+
+        // Open / Close
         const isHideMenu = (menu) => {
           return !(menu === 'true');
         };
+
         return [
           {
             pathSegment: 'cdim',
             label: 'Composable Disaggregated Infrastructure Manager',
             icon: 'home',
-            viewUrl: `/${locale}/home`,
+            viewUrl: `/ui/${locale}/home`,
+            // badgeCounter: {
+            //   count: () => 3, // Example static count, replace with dynamic count if needed
+            // },
             children: [
               {
                 category: {
@@ -262,6 +270,33 @@ i18nProvider.init().then(() => {
               },
             ],
           },
+          {
+            pathSegment: 'alerts',
+            label: i18nProvider.getTranslation('Alerts', undefined, locale),
+            icon: 'bell',
+            viewUrl: `/ui/${locale}/alerts`,
+            openNodeInModal: {
+              title: i18nProvider.getTranslation('Alerts', undefined, locale),
+              width: '600px',
+              height: '90vh',
+            },
+            // Keep Luigi's own modal spinner up until the page has fetched its
+            // data and calls uxManager().hideLoadingIndicator() itself, so the
+            // user sees a single loading indicator instead of two in a row.
+            loadingIndicator: {
+              enabled: true,
+              hideAutomatically: false,
+            },
+            badgeCounter: {
+              // Count is critical + warning combined (see useAlertBadgePolling.ts).
+              label: i18nProvider.getTranslation('Alerts', undefined, locale),
+              // Synchronous read of the shared state maintained by the React
+              // poller in the core window (components/AlertBadgeUpdater.tsx).
+              count: () => {
+                return getAlertBadgeCount();
+              },
+            },
+          },
         ];
       },
       profile: {
@@ -277,7 +312,7 @@ i18nProvider.init().then(() => {
     settings: {
       header: {
         title: process.env.NEXT_PUBLIC_HEADER_TITLE || 'Composable Disaggregated Infrastructure Manager',
-        logo: '/favicon.ico',
+        logo: '/ui/favicon.ico',
       },
       customTranslationImplementation: i18nProvider,
       sideNavFooterText: '',
@@ -298,6 +333,20 @@ i18nProvider.init().then(() => {
     lifecycleHooks: {
       luigiAfterInit: () => {
         i18nProvider.afterInit();
+
+        // Luigi modal does not close when clicking outside (on the backdrop),
+        // so detect backdrop clicks and trigger the modal close button.
+        document.addEventListener('click', (event) => {
+          const target = event.target;
+          if (target instanceof HTMLElement && target.classList.contains('fd-dialog')) {
+            const closeButton =
+              target.querySelector('[data-testid="lui-modal-index-0"]') ||
+              target.querySelector('.fd-dialog__header button');
+            if (closeButton instanceof HTMLElement) {
+              closeButton.click();
+            }
+          }
+        });
       },
     },
     communication: {

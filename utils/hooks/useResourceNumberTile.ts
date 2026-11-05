@@ -35,11 +35,11 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
     resourcesOk,
     resourcesCritical,
     resourcesWarning,
-    resourcesDisabled,
     resourcesUnallocated,
     resourcesDesignAvailable,
     resourcesDesignUnavailable,
     resourcesMaintenance,
+    resourcesNotDetected,
     resourcesValidating,
     resourcesError,
   } = useResourceNumbers();
@@ -57,12 +57,12 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
     case 'critical':
       returnProps.status = 'Critical';
       returnProps.number = resourcesCritical;
-      returnProps.query = { health: ['Critical'] };
+      returnProps.query = { status: ['Critical'] };
       break;
     case 'warning':
       returnProps.status = 'Warning';
       returnProps.number = resourcesWarning;
-      returnProps.query = { health: ['Warning'] };
+      returnProps.query = { status: ['Warning'] };
       break;
     case 'all':
       returnProps.status = 'All';
@@ -72,12 +72,7 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
     case 'ok':
       returnProps.status = 'OK';
       returnProps.number = resourcesOk;
-      returnProps.query = { health: ['OK'] };
-      break;
-    case 'disabled':
-      returnProps.status = 'Disabled';
-      returnProps.number = resourcesDisabled;
-      returnProps.query = { state: ['Disabled'] };
+      returnProps.query = { status: ['OK'] };
       break;
     case 'unallocated':
       returnProps.status = 'Unallocated';
@@ -89,8 +84,7 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
       returnProps.number = resourcesDesignAvailable;
       returnProps.query = {
         resourceAvailable: ['Available'],
-        health: ['OK'],
-        state: ['Enabled'],
+        status: ['OK'],
         detection: ['Detected'],
       };
       break;
@@ -103,6 +97,11 @@ export const useResourceNumberTile = (state: ResourceTileState): Omit<NumberTile
       returnProps.status = 'Maintenance';
       returnProps.number = resourcesMaintenance;
       returnProps.query = { resourceAvailable: ['Unavailable'] };
+      break;
+    case 'notDetected':
+      returnProps.status = 'NotDetected';
+      returnProps.number = resourcesNotDetected;
+      returnProps.query = { detection: ['Not Detected'] };
       break;
     default:
       break;
