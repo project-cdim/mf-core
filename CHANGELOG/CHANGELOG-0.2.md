@@ -1,6 +1,6 @@
 # Changelog 0.2
 
-## [0.2.2](https://github.com/project-cdim/mf-core/compare/v0.2.1...v0.2.2) - 2026-11-05
+## [0.2.2](https://github.com/project-cdim/mf-core/compare/v0.2.1...v0.2.2) - 2026-11-09
 
 The changes from v0.2.1 are as follows:
 
